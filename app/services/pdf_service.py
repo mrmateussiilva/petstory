@@ -99,7 +99,15 @@ class PDFService:
             return b""
         else:
             # Return PDF as bytes
-            pdf_bytes = pdf.output(dest="S").encode("latin-1")
+            # pdf.output(dest="S") returns bytes/bytearray, not a string
+            pdf_output = pdf.output(dest="S")
+            if isinstance(pdf_output, bytearray):
+                pdf_bytes = bytes(pdf_output)
+            elif isinstance(pdf_output, bytes):
+                pdf_bytes = pdf_output
+            else:
+                # If it's a string, encode it
+                pdf_bytes = pdf_output.encode("latin-1")
             logger.info(f"PDF generated ({len(pdf_bytes)} bytes)")
             return pdf_bytes
 

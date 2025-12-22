@@ -11,11 +11,16 @@ class Settings(BaseSettings):
 
     # API Keys
     GEMINI_API_KEY: str
-    RESEND_API_KEY: str = ""  # Opcional, pode ser vazio para modo simulação
 
     # Email Configuration
     EMAIL_FROM: str = "noreply@petstory.com"
     EMAIL_FROM_NAME: str = "PetStory"
+
+    # SMTP Configuration
+    SMTP_SERVER: str = "smtp.gmail.com"
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""  # Email do remetente (ex: seu-email@gmail.com)
+    SMTP_PASSWORD: str = ""  # Senha de app ou senha do email
 
     # Application
     APP_NAME: str = "PetStory API"

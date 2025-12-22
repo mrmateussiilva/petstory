@@ -75,39 +75,91 @@ class GeminiGenerator(ImageGenerator):
                 if hasattr(part, 'text') and part.text:
                     logger.debug(f"Response part contains text: {part.text[:100]}")
                 
-                # Method 2: Check if part has inline_data (base64 encoded image)
+                # Method 2: Check if part has inline_data
                 if hasattr(part, 'inline_data') and part.inline_data:
                     try:
-                        # Decode base64 image
-                        image_data = base64.b64decode(part.inline_data.data)
+                        inline_data = part.inline_data
+                        mime_type = getattr(inline_data, 'mime_type', 'N/A')
+                        logger.info(f"Found inline_data: mime_type={mime_type}")
+                        
+                        # Try to get data - it might be bytes or base64 string
+                        data = inline_data.data
+                        logger.info(f"Data type: {type(data)}, length: {len(data) if hasattr(data, '__len__') else 'N/A'}")
+                        
+                        # If data is a string, try to decode as base64
+                        if isinstance(data, str):
+                            logger.debug("Data is string, decoding as base64")
+                            image_data = base64.b64decode(data)
+                        # If data is bytes, use directly
+                        elif isinstance(data, bytes):
+                            logger.debug("Data is bytes, using directly")
+                            image_data = data
+                        else:
+                            # Try to convert to bytes
+                            logger.debug(f"Converting data to bytes from type {type(data)}")
+                            image_data = bytes(data)
+                        
+                        logger.info(f"Image data length: {len(image_data)} bytes")
+                        
+                        # Try to open as image
                         generated_image = Image.open(io.BytesIO(image_data))
-                        logger.debug("Extracted image from inline_data")
+                        logger.info("Successfully extracted image from inline_data")
                         break
                     except Exception as e:
-                        logger.warning(f"Failed to decode inline_data: {e}")
+                        logger.error(f"Failed to decode inline_data: {e}", exc_info=True)
+                        # Try to save raw data for inspection
+                        try:
+                            if 'image_data' in locals():
+                                with open('/tmp/gemini_raw_data.bin', 'wb') as f:
+                                    f.write(image_data)
+                                logger.error(f"Saved raw data to /tmp/gemini_raw_data.bin for inspection")
+                        except:
+                            pass
                         continue
                 
-                # Method 3: Check if part has as_image method (PIL Image)
+                # Method 3: Check if part has file_data
+                if hasattr(part, 'file_data') and part.file_data:
+                    try:
+                        file_data = part.file_data
+                        logger.debug(f"Found file_data: mime_type={getattr(file_data, 'mime_type', 'N/A')}")
+                        # Similar processing as inline_data
+                        data = file_data.data
+                        if isinstance(data, str):
+                            image_data = base64.b64decode(data)
+                        elif isinstance(data, bytes):
+                            image_data = data
+                        else:
+                            image_data = bytes(data)
+                        generated_image = Image.open(io.BytesIO(image_data))
+                        logger.info("Successfully extracted image from file_data")
+                        break
+                    except Exception as e:
+                        logger.warning(f"Failed to decode file_data: {e}")
+                        continue
+                
+                # Method 4: Check if part has as_image method (PIL Image)
                 if hasattr(part, 'as_image'):
                     try:
                         generated_image = part.as_image()
-                        logger.debug("Extracted image using as_image() method")
+                        logger.info("Extracted image using as_image() method")
                         break
                     except Exception as e:
                         logger.debug(f"as_image() method failed: {e}")
                         continue
-                
-                # Method 4: Check if part is directly an image
-                if isinstance(part, Image.Image):
-                    generated_image = part
-                    logger.debug("Part is directly an Image")
-                    break
             
             if generated_image is None:
-                # Log all available attributes for debugging
-                logger.error("Available parts attributes:")
+                # Log detailed information for debugging
+                logger.error("No image data found. Response details:")
+                logger.error(f"Number of candidates: {len(response.candidates)}")
                 for i, part in enumerate(response.candidates[0].content.parts):
-                    logger.error(f"Part {i}: {type(part)}, attributes: {dir(part)}")
+                    logger.error(f"Part {i}:")
+                    logger.error(f"  Type: {type(part)}")
+                    logger.error(f"  Has text: {hasattr(part, 'text') and bool(part.text)}")
+                    logger.error(f"  Has inline_data: {hasattr(part, 'inline_data') and bool(part.inline_data)}")
+                    if hasattr(part, 'inline_data') and part.inline_data:
+                        logger.error(f"  inline_data type: {type(part.inline_data)}")
+                        logger.error(f"  inline_data attributes: {dir(part.inline_data)}")
+                    logger.error(f"  Has file_data: {hasattr(part, 'file_data') and bool(part.file_data)}")
                 raise ValueError("No image data found in response parts")
             
             # Convert to RGB and save as PNG bytes
