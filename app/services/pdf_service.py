@@ -147,14 +147,39 @@ class PDFService:
         
         return text.strip()
     
+    def _add_polaroid_frame(self, pdf: FPDF, x: float, y: float, width: float, height: float):
+        """Add a Polaroid-style frame around an image.
+        
+        Args:
+            pdf: FPDF instance
+            x: X position
+            y: Y position
+            width: Frame width
+            height: Frame height (including bottom margin for Polaroid effect)
+        """
+        # Polaroid frame: white background with border
+        frame_bottom_margin = 20  # Space for "caption" area at bottom
+        image_height = height - frame_bottom_margin
+        
+        # White background
+        pdf.set_fill_color(255, 255, 255)
+        pdf.rect(x, y, width, height, style='F')
+        
+        # Border
+        pdf.set_line_width(2)
+        pdf.set_draw_color(200, 200, 200)
+        pdf.rect(x, y, width, height, style='D')
+        
+        return image_height
+    
     def create_digital_kit(
         self,
         pet_name: str,
         pet_date: str,
         pet_story: str,
-        image_path: str,
+        art_image_path: str,
         output_dir: str = ".",
-        original_photo_path: Optional[str] = None,
+        original_image_path: Optional[str] = None,
     ) -> str:
         """Create a digital kit PDF with 4 pages: cover, biography, coloring page, and sticker grid.
         
@@ -162,9 +187,9 @@ class PDFService:
             pet_name: Pet's name
             pet_date: Pet's date/birthday
             pet_story: Pet's story/biography text
-            image_path: Path to the generated art image (for coloring page and stickers)
+            art_image_path: Path to the generated art image (line art) - used for cover, coloring, and stickers
             output_dir: Directory to save the PDF
-            original_photo_path: Optional path to original photo (for cover page)
+            original_image_path: Path to original photo - used for biography page (fallback to art if not provided)
             
         Returns:
             Path to the created PDF file
@@ -177,11 +202,14 @@ class PDFService:
         clean_pet_date = self.clean_text(pet_date)
         clean_pet_story = self.clean_text(pet_story)
         
+        # Fallback: use art image if original is not available
+        biography_image_path = original_image_path if original_image_path and os.path.exists(original_image_path) else art_image_path
+        
         pdf = FPDF(orientation="P", unit="mm", format="A4")
         pdf.set_auto_page_break(auto=False)  # Disable auto page break for better control
         
         # ============================================
-        # PAGE 1: COVER
+        # PAGE 1: COVER - Uses ART IMAGE (Line Art)
         # ============================================
         pdf.add_page()
         
@@ -192,10 +220,9 @@ class PDFService:
         title_text = f"Livro de Colorir do {clean_pet_name}"
         pdf.cell(0, 15, title_text, ln=1, align="C")
         
-        # Image centered below title
-        cover_image_path = original_photo_path if original_photo_path else image_path
+        # Image centered below title - USE ART IMAGE
         try:
-            img = Image.open(cover_image_path)
+            img = Image.open(art_image_path)
             if img.mode != "RGB":
                 img = img.convert("RGB")
             
@@ -223,7 +250,7 @@ class PDFService:
             
             pdf.image(temp_buffer, x=x, y=y, w=width, h=height)
         except Exception as e:
-            logger.warning(f"Could not add image to cover: {e}")
+            logger.warning(f"Could not add art image to cover: {e}")
         
         # ============================================
         # PAGE 2: THE STORY (A História)
@@ -255,10 +282,56 @@ class PDFService:
             pdf.cell(0, 8, clean_pet_date, ln=1, align="C")
             pdf.set_text_color(0, 0, 0)  # Reset to black
         
+        # Polaroid-style photo frame with ORIGINAL IMAGE (Foto Real)
+        polaroid_width = 80
+        polaroid_height = 100
+        polaroid_x = (self.A4_WIDTH_MM - polaroid_width) / 2
+        polaroid_y = pdf.get_y() + 10
+        
+        try:
+            img = Image.open(biography_image_path)
+            if img.mode != "RGB":
+                img = img.convert("RGB")
+            
+            img_width, img_height = img.size
+            aspect_ratio = img_width / img_height
+            
+            # Calculate image size within Polaroid frame (leave space for bottom margin)
+            frame_bottom_margin = 15
+            image_area_height = polaroid_height - frame_bottom_margin
+            image_area_width = polaroid_width - 6  # 3mm margin on each side
+            
+            if aspect_ratio > (image_area_width / image_area_height):
+                photo_width = image_area_width
+                photo_height = image_area_width / aspect_ratio
+            else:
+                photo_height = image_area_height
+                photo_width = image_area_height * aspect_ratio
+            
+            # Center image within frame
+            photo_x = polaroid_x + (polaroid_width - photo_width) / 2
+            photo_y = polaroid_y + 3  # Small top margin
+            
+            # Draw Polaroid frame
+            self._add_polaroid_frame(pdf, polaroid_x, polaroid_y, polaroid_width, polaroid_height)
+            
+            # Add photo inside frame
+            temp_buffer = io.BytesIO()
+            img.save(temp_buffer, format="PNG")
+            temp_buffer.seek(0)
+            
+            pdf.image(temp_buffer, x=photo_x, y=photo_y, w=photo_width, h=photo_height)
+            
+            # Update Y position for text below Polaroid
+            text_start_y = polaroid_y + polaroid_height + 15
+        except Exception as e:
+            logger.warning(f"Could not add original photo to biography page: {e}")
+            text_start_y = pdf.get_y() + 15
+        
         # Body text: Story with generous margins (book-like layout)
         text_margin = 25
         pdf.set_font("Helvetica", "", 12)
-        pdf.set_xy(text_margin, pdf.get_y() + 15)
+        pdf.set_xy(text_margin, text_start_y)
         
         # Calculate available width for text
         text_width = self.A4_WIDTH_MM - (2 * text_margin)
@@ -272,43 +345,13 @@ class PDFService:
             align="J"  # Justified text
         )
         
-        # Footer: Thumbnail image of the pet as "signature"
-        try:
-            img = Image.open(image_path)
-            if img.mode != "RGB":
-                img = img.convert("RGB")
-            
-            # Create thumbnail (30mm size)
-            thumbnail_size = 30
-            img_width, img_height = img.size
-            aspect_ratio = img_width / img_height
-            
-            if aspect_ratio > 1:
-                thumb_width = thumbnail_size
-                thumb_height = thumbnail_size / aspect_ratio
-            else:
-                thumb_height = thumbnail_size
-                thumb_width = thumbnail_size * aspect_ratio
-            
-            # Position thumbnail at bottom center with some margin
-            thumb_y = self.A4_HEIGHT_MM - border_margin - thumb_height - 5
-            thumb_x = (self.A4_WIDTH_MM - thumb_width) / 2
-            
-            temp_buffer = io.BytesIO()
-            img.save(temp_buffer, format="PNG")
-            temp_buffer.seek(0)
-            
-            pdf.image(temp_buffer, x=thumb_x, y=thumb_y, w=thumb_width, h=thumb_height)
-        except Exception as e:
-            logger.warning(f"Could not add thumbnail to biography page: {e}")
-        
         # ============================================
-        # PAGE 3: THE ART (A Arte) - Full page for coloring
+        # PAGE 3: THE ART (A Arte) - Full page for coloring - Uses ART IMAGE
         # ============================================
         pdf.add_page()
         
         try:
-            img = Image.open(image_path)
+            img = Image.open(art_image_path)
             if img.mode != "RGB":
                 img = img.convert("RGB")
             
@@ -346,7 +389,7 @@ class PDFService:
             logger.error(f"Error adding coloring page image: {e}")
         
         # ============================================
-        # PAGE 4: STICKERS (Adesivos) - Grid 3x3
+        # PAGE 4: STICKERS (Adesivos) - Grid 3x3 - Uses ART IMAGE
         # ============================================
         pdf.add_page()
         
@@ -356,7 +399,7 @@ class PDFService:
         pdf.cell(0, 12, "Adesivos", ln=1, align="C")
         
         try:
-            img = Image.open(image_path)
+            img = Image.open(art_image_path)
             if img.mode != "RGB":
                 img = img.convert("RGB")
             

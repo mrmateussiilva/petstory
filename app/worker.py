@@ -63,9 +63,9 @@ def process_pet_story(
                 pet_name=nome_pet,
                 pet_date=pet_date,
                 pet_story=pet_story,
-                image_path=art_path,
+                art_image_path=art_path,
                 output_dir=user_temp_dir,
-                original_photo_path=photo_path,
+                original_image_path=photo_path,
             )
             print(f"✅ PDF criado com sucesso: {pdf_path}")
         except Exception as e:
