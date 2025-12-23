@@ -513,5 +513,121 @@
     </div>
 
     <script src="script.js"></script>
+
+    <!-- ========================================
+         🎉 MODAL DE SUCESSO (PÓS-PAGAMENTO)
+         ======================================== -->
+    <div id="successModal" class="hidden fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+        <div class="success-modal-content bg-white border-4 border-black rounded-[2rem] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] max-w-md w-full p-8 md:p-10 relative animate-modal-in">
+            <!-- Botão fechar (X) -->
+            <button 
+                id="closeModalBtn" 
+                class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 border-2 border-black transition-transform hover:scale-110"
+                aria-label="Fechar modal"
+            >
+                <i class="fas fa-times text-gray-700"></i>
+            </button>
+
+            <!-- Emoji animado -->
+            <div class="text-center mb-6">
+                <div class="text-6xl md:text-7xl mb-4 animate-bounce inline-block">✨🐶</div>
+            </div>
+
+            <!-- Título -->
+            <h2 class="font-hand text-3xl md:text-4xl font-bold text-center mb-4 text-[#2d2d2d]">
+                Pagamento Confirmado! 🎉
+            </h2>
+
+            <!-- Texto explicativo -->
+            <p class="text-center text-gray-700 mb-6 leading-relaxed text-base md:text-lg">
+                A mágica começou! Nossos robôs já estão desenhando o seu pet. O <strong>Kit Digital (PDF + Site)</strong> chegará no seu e-mail em cerca de <strong>5 a 10 minutos</strong>.
+            </p>
+
+            <!-- Card de Aviso Amarelo -->
+            <div class="bg-yellow-100 border-2 border-yellow-400 rounded-xl p-4 mb-6 text-center">
+                <div class="flex items-center justify-center gap-2 mb-2">
+                    <i class="fas fa-exclamation-triangle text-yellow-600 text-xl"></i>
+                    <p class="font-hand font-bold text-yellow-900 text-base md:text-lg">
+                        Verifique sua caixa de Spam/Promoções
+                    </p>
+                </div>
+                <p class="text-sm text-yellow-800">
+                    O e-mail pode demorar alguns segundos para chegar
+                </p>
+            </div>
+
+            <!-- Botão de ação -->
+            <button 
+                id="modalOkBtn"
+                class="w-full btn-sticker btn-pink py-4 text-lg md:text-xl font-bold hover:scale-105 transition shadow-lg"
+            >
+                Entendido! ✨
+            </button>
+        </div>
+    </div>
+
+    <!-- Script para Modal de Sucesso -->
+    <script>
+        (function() {
+            // Verificar parâmetros na URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const status = urlParams.get('status');
+            const payment = urlParams.get('payment');
+            
+            // Verificar se deve mostrar o modal
+            if (status === 'success' || payment === 'approved') {
+                const modal = document.getElementById('successModal');
+                if (modal) {
+                    // Limpar URL sem recarregar a página
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                    
+                    // Mostrar modal
+                    modal.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden'; // Prevenir scroll
+                }
+            }
+            
+            // Função para fechar o modal
+            function closeModal() {
+                const modal = document.getElementById('successModal');
+                if (modal) {
+                    modal.classList.add('hidden');
+                    document.body.style.overflow = ''; // Restaurar scroll
+                }
+            }
+            
+            // Event listeners
+            const closeBtn = document.getElementById('closeModalBtn');
+            const okBtn = document.getElementById('modalOkBtn');
+            const modal = document.getElementById('successModal');
+            
+            if (closeBtn) {
+                closeBtn.addEventListener('click', closeModal);
+            }
+            
+            if (okBtn) {
+                okBtn.addEventListener('click', closeModal);
+            }
+            
+            // Fechar ao clicar fora do modal
+            if (modal) {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        closeModal();
+                    }
+                });
+            }
+            
+            // Fechar com ESC
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    const modal = document.getElementById('successModal');
+                    if (modal && !modal.classList.contains('hidden')) {
+                        closeModal();
+                    }
+                }
+            });
+        })();
+    </script>
 </body>
 </html>

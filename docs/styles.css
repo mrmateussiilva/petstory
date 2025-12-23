@@ -710,3 +710,34 @@
         details > summary::-webkit-details-marker { 
             display: none;
         }
+
+        /* ========================================
+           🎉 ANIMAÇÃO DO MODAL DE SUCESSO
+           ======================================== */
+        @keyframes modalBounceIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.3) translateY(-50px);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.05) translateY(0);
+            }
+            70% {
+                transform: scale(0.95);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        
+        .animate-modal-in {
+            animation: modalBounceIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        
+        @media (prefers-reduced-motion: reduce) {
+            .animate-modal-in {
+                animation: none;
+                opacity: 1;
+            }
+        }
