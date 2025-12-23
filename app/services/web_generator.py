@@ -85,13 +85,18 @@ class WebGenerator:
         
         # Load template
         template = self._load_template()
-        
-        # Replace placeholders
-        html = template.format(
-            pet_name=pet_name,
-            pet_date=pet_date,
-            pet_story=pet_story,
-            image_data_uri=image_data_uri,
+
+        # Replace placeholders manually instead of using str.format.
+        # The template contains many CSS/JS curly braces ({}) that would
+        # conflict with str.format and cause KeyError for things like
+        # "\n      margin". To avoid having to escape all CSS braces, we
+        # perform simple string replacements only for our known markers.
+        html = (
+            template
+            .replace("{pet_name}", pet_name)
+            .replace("{pet_date}", pet_date)
+            .replace("{pet_story}", pet_story)
+            .replace("{image_data_uri}", image_data_uri)
         )
         
         logger.info(f"Tribute page generated successfully for {pet_name}")
