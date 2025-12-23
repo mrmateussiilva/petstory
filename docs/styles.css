@@ -636,6 +636,37 @@
         }
 
         /* ========================================
+           💻 CTA FIXO DESKTOP
+           ======================================== */
+        .cta-fixed-desktop {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 999;
+            display: none;
+            animation: pulse 2s infinite;
+        }
+        
+        @media (min-width: 768px) {
+            .cta-fixed-desktop {
+                display: block;
+            }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { 
+                transform: scale(1); 
+            }
+            50% { 
+                transform: scale(1.05); 
+            }
+        }
+        
+        .cta-fixed-desktop .btn-sticker {
+            min-width: 120px;
+        }
+
+        /* ========================================
            📐 ESPAÇAMENTOS PADRONIZADOS
            ======================================== */
         .section-spacing {

@@ -63,8 +63,8 @@
     <!-- ========================================
          🔔 FAIXA DE AVISO
          ======================================== -->
-    <div class="bg-yellow-300 text-center py-2 border-b-2 border-yellow-500 border-dashed sticky top-0 z-50 shadow-sm font-hand text-lg">
-        ⭐ <span data-promotion-name>Oferta de Natal</span>: <span class="bg-white px-2 rounded ml-1 font-bold" data-discount>50% OFF</span> por tempo limitado!
+    <div class="bg-red-100 border-b-2 border-red-400 border-dashed sticky top-0 z-50 shadow-sm font-hand text-base md:text-lg text-center py-2">
+        ⏰ <span data-promotion-name>Oferta Especial</span>: <span class="bg-white px-2 rounded ml-1 font-bold text-red-600" data-discount>50% OFF</span> - <span class="font-bold text-red-700">Por tempo limitado!</span>
     </div>
 
     <main class="master-paper relative" id="paper-container">
@@ -106,35 +106,62 @@
         <section class="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center pl-0 md:pl-16 mb-20 relative z-10 section-spacing">
             
             <div class="text-center lg:text-left reveal">
-                <div class="inline-block bg-black text-white px-4 py-2 rounded-lg font-hand text-base md:text-lg mb-6 shadow-md animate-float">
-                    #1 Trend do TikTok 🎵
+                <div class="inline-block bg-pink-100 border-2 border-pink-400 text-pink-700 px-4 py-2 rounded-lg font-hand text-base md:text-lg mb-6 shadow-md animate-float font-bold">
+                    🎁 Presente perfeito para quem ama pets
                 </div>
                 
-                <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 text-[#2d2d2d]">
-                    Seu Pet virou <br>
-                    <span class="marker-anim">Livro de Colorir!</span>
+                <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-4 text-[#2d2d2d]">
+                    Eternize seu pet em um <br>
+                    <span class="marker-anim">livro de memórias</span>
                 </h1>
                 
-                <p class="text-lg md:text-xl text-gray-600 mb-8 font-hand leading-relaxed max-w-lg mx-auto lg:mx-0">
-                    Transforme a foto do seu bichinho em arte estilo <strong>"Doodle Goods"</strong> (traço grosso e fofo). Baixe o PDF, imprima e relaxe pintando.
+                <!-- Preço no Hero -->
+                <div class="mb-6 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3">
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-2xl md:text-3xl text-gray-400 line-through font-hand">R$ 94</span>
+                        <span class="text-4xl md:text-5xl font-hand font-bold text-pink-600">R$ 47</span>
+                        <span class="ml-2 bg-red-100 text-red-600 px-2 py-1 rounded text-sm font-bold border border-red-300">50% OFF</span>
+                    </div>
+                </div>
+                
+                <p class="text-lg md:text-xl text-gray-700 mb-8 font-hand leading-relaxed max-w-lg mx-auto lg:mx-0">
+                    Crie um livro de memórias único do seu pet. <strong>Imprima, pinte e guarde para sempre.</strong> Perfeito para presentear quem você ama ou para você mesmo relaxar colorindo momentos especiais.
                 </p>
 
                 <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-6">
-                    <a href="criar.html" class="btn-sticker btn-green px-8 py-4 text-lg md:text-xl w-full sm:w-auto hover-scale" aria-label="Ir para página de criação do livro de colorir">
-                        Quero criar o meu! 🎨
+                    <a href="criar.html" class="btn-sticker btn-pink px-8 py-4 text-lg md:text-xl w-full sm:w-auto hover-scale font-bold" aria-label="Criar meu livro de colorir personalizado agora">
+                        Criar Meu Livro Agora - R$ 47 🎨
                     </a>
                     <a href="#como-funciona" class="btn-sticker btn-blue px-6 py-4 text-base md:text-lg w-full sm:w-auto" aria-label="Saiba como funciona o processo de transformação">
                         Como funciona? ✨
                     </a>
                 </div>
                 
-                <div class="mt-8 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 text-sm md:text-base">
-                    <div class="flex items-center gap-2 text-sm font-bold text-gray-700 bg-white inline-block px-4 py-2 rounded-lg border border-gray-200 shadow-sm hover-wiggle cursor-default">
-                    <div class="flex text-yellow-400"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
-                    <span>"Amei demais!" - Julia M.</span>
+                <!-- Prova Social sem depoimentos falsos -->
+                <div class="mt-8 space-y-3">
+                    <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 text-sm md:text-base">
+                        <div class="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border-2 border-yellow-300 shadow-sm">
+                            <div class="flex text-yellow-400 text-lg"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+                            <span class="font-bold text-gray-700">Qualidade Garantida</span>
+                        </div>
+                        <div class="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border-2 border-green-300 shadow-sm">
+                            <i class="fas fa-shield-alt text-green-500"></i>
+                            <span class="font-bold text-gray-700">100% Satisfação</span>
+                        </div>
                     </div>
-                    <div class="text-xs text-gray-500 font-hand">
-                        ✨ Entrega em 5-10 minutos
+                    <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 text-xs md:text-sm text-gray-600">
+                        <div class="flex items-center gap-1">
+                            <i class="fas fa-bolt text-yellow-500"></i>
+                            <span class="font-hand">Entrega em 5-10 minutos</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <i class="fas fa-download text-blue-500"></i>
+                            <span class="font-hand">PDF instantâneo no e-mail</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <i class="fas fa-print text-purple-500"></i>
+                            <span class="font-hand">Imprima quantas vezes quiser</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -198,7 +225,7 @@
                 <div class="step-card reveal">
                     <span class="step-icon">💌</span>
                     <h3 class="font-hand font-bold text-xl md:text-2xl mb-3">3. Você Recebe</h3>
-                    <p class="text-gray-600 text-sm md:text-base leading-relaxed">O PDF completo e todos os bônus chegam direto no seu e-mail pronto para imprimir.</p>
+                    <p class="text-gray-600 text-sm md:text-base leading-relaxed">O ebook de colorir (PDF) e o link do site de homenagem chegam direto no seu e-mail pronto para imprimir e compartilhar!</p>
                 </div>
             </div>
         </section>
@@ -207,65 +234,75 @@
              🎁 O QUE VOCÊ RECEBE
              ======================================== -->
         <section id="o-que-recebe" class="pl-0 md:pl-16 mb-20 section-spacing reveal">
-            <h2 class="section-title">O que você recebe no Kit Completo 🎁</h2>
+            <h2 class="section-title">O que você recebe 🎁</h2>
             
             <div class="max-w-3xl mx-auto bg-[#fcf8e3] border-2 border-dashed border-yellow-400 rounded-xl p-6 md:p-8 relative">
                 <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 text-3xl animate-float">📌</div>
                 
-                <div class="grid md:grid-cols-3 gap-6">
+                <div class="grid md:grid-cols-2 gap-6">
                     <div class="bg-white border-2 border-black rounded-lg p-6 hover:scale-105 transition-transform">
                         <div class="text-4xl mb-3">📚</div>
-                        <h3 class="font-hand font-bold text-xl mb-2">Livro de Colorir PDF</h3>
-                        <p class="text-gray-600 text-sm">Formato A4, pronto para imprimir. Alta qualidade e traço perfeito.</p>
-                    </div>
-                    
-                    <div class="bg-white border-2 border-black rounded-lg p-6 hover:scale-105 transition-transform">
-                        <div class="text-4xl mb-3">🎨</div>
-                        <h3 class="font-hand font-bold text-xl mb-2">Pack de Adesivos</h3>
-                        <p class="text-gray-600 text-sm">12 adesivos digitais do seu pet para usar onde quiser!</p>
+                        <h3 class="font-hand font-bold text-xl mb-2">Ebook de Colorir (PDF)</h3>
+                        <p class="text-gray-600 text-sm">Formato A4, pronto para imprimir. Alta qualidade e traço perfeito. Imprima quantas vezes quiser e tenha seu livro físico na estante!</p>
                     </div>
          
                     <div class="bg-white border-2 border-pink-300 rounded-lg p-6 hover:scale-105 transition-transform bg-pink-50">
                         <div class="text-4xl mb-3">🎁</div>
-                        <h3 class="font-hand font-bold text-xl mb-2">Bônus: Site Homenagem</h3>
-                        <p class="text-gray-600 text-sm">Uma página especial só do seu pet para compartilhar com quem ama!</p>
+                        <h3 class="font-hand font-bold text-xl mb-2">Site de Homenagem <span class="text-sm text-green-600">(GRÁTIS)</span></h3>
+                        <p class="text-gray-600 text-sm">Uma página web única e personalizada só do seu pet para compartilhar com quem ama! Incluído gratuitamente.</p>
                     </div>
                 </div>
             </div>
         </section>
 
         <!-- ========================================
-             ❓ POR QUE FUNCIONA TÃO BEM
+             🎁 PRESENTEIE ALGUÉM (MOVIDO PARA CIMA)
              ======================================== -->
-        <!-- <section id="por-que-funciona" class="pl-0 md:pl-16 mb-20 section-spacing reveal">
-            <h2 class="section-title">Por que funciona tão bem? 🎯</h2>
+        <section id="presenteie" class="pl-0 md:pl-16 mb-20 section-spacing reveal">
+            <div class="max-w-3xl mx-auto bg-gradient-to-br from-pink-100 to-purple-100 border-3 border-black rounded-xl p-6 md:p-8 text-center">
+                <div class="text-5xl mb-4 animate-float">🎁</div>
+                <h2 class="font-hand text-3xl md:text-4xl font-bold mb-4">Presenteie Alguém Especial!</h2>
+                <p class="text-gray-700 text-lg md:text-xl mb-6 font-hand leading-relaxed">
+                    Que tal surpreender quem você ama com um presente único e personalizado? Perfeito para aniversários, Dia das Mães, Natal ou qualquer momento especial! Um presente que guarda memórias para sempre.
+                </p>
+                <a href="criar.html" class="btn-sticker btn-pink px-8 py-4 text-xl hover-scale inline-block font-bold" aria-label="Criar presente personalizado de livro de colorir">
+                    Criar Meu Livro Agora - R$ 47 🎀
+                </a>
+            </div>
+        </section>
+
+        <!-- ========================================
+             💝 POR QUE CRIAR MEMÓRIAS COLORIDAS?
+             ======================================== -->
+        <section id="por-que-funciona" class="pl-0 md:pl-16 mb-20 section-spacing reveal">
+            <h2 class="section-title">Por que criar memórias coloridas do seu pet? 💝</h2>
             
             <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-                <div class="bg-white border-3 border-black rounded-lg p-6">
-                    <div class="text-3xl mb-4">🤖</div>
-                    <h3 class="font-hand font-bold text-xl mb-3">IA de Última Geração</h3>
-                    <p class="text-gray-600 leading-relaxed">Usamos tecnologia avançada para criar traços perfeitos que preservam a personalidade do seu pet.</p>
-                </div>
-                
-                <div class="bg-white border-3 border-black rounded-lg p-6">
-                    <div class="text-3xl mb-4">⚡</div>
-                    <h3 class="font-hand font-bold text-xl mb-3">Super Rápido</h3>
-                    <p class="text-gray-600 leading-relaxed">Em 5 a 10 minutos você já tem tudo pronto. Sem espera, sem complicação!</p>
-                </div>
-                
-                <div class="bg-white border-3 border-black rounded-lg p-6">
-                    <div class="text-3xl mb-4">🎨</div>
-                    <h3 class="font-hand font-bold text-xl mb-3">Estilo Único</h3>
-                    <p class="text-gray-600 leading-relaxed">Traço grosso e fofo estilo "Doodle Goods" que está bombando nas redes sociais.</p>
-                </div>
-                
-                <div class="bg-white border-3 border-black rounded-lg p-6">
+                <div class="bg-white border-3 border-black rounded-lg p-6 hover:scale-105 transition-transform">
                     <div class="text-3xl mb-4">💝</div>
-                    <h3 class="font-hand font-bold text-xl mb-3">Presente Perfeito</h3>
-                    <p class="text-gray-600 leading-relaxed">Presente único e personalizado que emociona quem recebe. Perfeito para qualquer ocasião!</p>
+                    <h3 class="font-hand font-bold text-xl mb-3">Presente Único que Emociona</h3>
+                    <p class="text-gray-600 leading-relaxed">Um presente personalizado que guarda memórias para sempre. Perfeito para mães, avós, namorados ou para você mesmo. Um presente que realmente toca o coração.</p>
+                </div>
+                
+                <div class="bg-white border-3 border-black rounded-lg p-6 hover:scale-105 transition-transform">
+                    <div class="text-3xl mb-4">📸</div>
+                    <h3 class="font-hand font-bold text-xl mb-3">Eternize Momentos Especiais</h3>
+                    <p class="text-gray-600 leading-relaxed">Transforme fotos em arte que você pode guardar, imprimir e colorir. Crie um livro físico que fica na sua estante, cheio de memórias do seu pet.</p>
+                </div>
+                
+                <div class="bg-white border-3 border-black rounded-lg p-6 hover:scale-105 transition-transform">
+                    <div class="text-3xl mb-4">🧘</div>
+                    <h3 class="font-hand font-bold text-xl mb-3">Relaxamento e Terapia</h3>
+                    <p class="text-gray-600 leading-relaxed">Colorir é uma forma de relaxar e se conectar com seu pet de uma maneira especial. Uma atividade terapêutica e cheia de carinho.</p>
+                </div>
+                
+                <div class="bg-white border-3 border-black rounded-lg p-6 hover:scale-105 transition-transform">
+                    <div class="text-3xl mb-4">⚡</div>
+                    <h3 class="font-hand font-bold text-xl mb-3">Super Rápido e Fácil</h3>
+                    <p class="text-gray-600 leading-relaxed">Em 5 a 10 minutos você já tem tudo pronto no seu e-mail. Sem espera, sem complicação! Basta enviar a foto e receber seu livro.</p>
                 </div>
             </div>
-        </section> -->
+        </section>
 
         <!-- ========================================
              🖼️ GALERIA - MURAL DA COMUNIDADE
@@ -304,45 +341,35 @@
             <div class="max-w-md mx-auto pricing-card text-center">
                 <div class="pricing-header">OFERTA ESPECIAL</div>
                 
-                <h3 class="font-hand text-3xl md:text-4xl font-bold mb-2 text-gray-800">Kit Digital Completo</h3>
+                <h3 class="font-hand text-3xl md:text-4xl font-bold mb-2 text-gray-800">Ebook + Site de Homenagem</h3>
                 <p class="text-sm text-gray-500 mb-6 font-hand text-base md:text-lg">Entrega Imediata no E-mail</p>
+
+                <!-- Garantia Visível -->
+                <div class="mb-4">
+                    <span class="bg-green-100 text-green-700 px-4 py-2 rounded-lg text-sm font-bold border-2 border-green-300 inline-block">
+                        ✅ 100% de satisfação ou seu dinheiro de volta
+                    </span>
+                </div>
 
                 <div class="bg-white/80 border-2 border-dashed border-gray-300 rounded-lg p-4 md:p-6 text-left mb-6">
                     <ul class="space-y-3 font-bold text-gray-700 text-sm md:text-base">
-                        <li class="flex items-center gap-3"><i class="fas fa-check text-green-500"></i> Livro de Colorir (PDF A4)</li>
-                        <li class="flex items-center gap-3"><i class="fas fa-check text-green-500"></i> Pack de Adesivos Digitais</li>
-                        <li class="flex items-center gap-3"><i class="fas fa-check text-green-500"></i> Wallpaper p/ Celular</li>
-                        <li class="flex items-center gap-3 bg-pink-50 p-2 -ml-2 rounded border border-pink-100"><i class="fas fa-gift text-pink-500"></i> Bônus: <strong>Site Homenagem</strong></li>
+                        <li class="flex items-center gap-3"><i class="fas fa-check text-green-500"></i> Ebook de Colorir (PDF A4)</li>
+                        <li class="flex items-center gap-3 bg-pink-50 p-2 -ml-2 rounded border border-pink-100"><i class="fas fa-gift text-pink-500"></i> <strong>Site de Homenagem Único</strong> <span class="text-green-600 text-xs ml-1">(GRÁTIS)</span></li>
                     </ul>
                 </div>
 
                 <div class="mb-6">
                     <p class="text-gray-400 line-through font-hand text-lg md:text-xl decoration-red-500 decoration-2" data-price="original">De R$ 94,00</p>
-                    <div class="text-5xl md:text-6xl font-hand font-bold text-[#2d2d2d] my-1" data-price="promotional">R$ 47,00</div>
+                    <div class="text-5xl md:text-6xl font-hand font-bold text-pink-600 my-1" data-price="promotional">R$ 47,00</div>
                     <p class="text-xs text-gray-400">Pagamento único • PIX ou Cartão</p>
                 </div>
 
-                <a href="criar.html" class="btn-sticker btn-pink w-full py-4 text-xl md:text-2xl hover:scale-105 transition shadow-lg" aria-label="Criar kit completo de livro de colorir personalizado">
-                    QUERO MEU KIT! 🐾
+                <a href="criar.html" class="btn-sticker btn-pink w-full py-4 text-xl md:text-2xl hover:scale-105 transition shadow-lg font-bold" aria-label="Criar ebook de colorir e site de homenagem personalizado">
+                    Criar Meu Livro Agora - R$ 47 🐾
                 </a>
             </div>
         </section>
 
-        <!-- ========================================
-             🎁 PRESENTEIE ALGUÉM
-             ======================================== -->
-        <section id="presenteie" class="pl-0 md:pl-16 mb-20 section-spacing reveal">
-            <div class="max-w-3xl mx-auto bg-gradient-to-br from-pink-100 to-purple-100 border-3 border-black rounded-xl p-6 md:p-8 text-center">
-                <div class="text-5xl mb-4 animate-float">🎁</div>
-                <h2 class="font-hand text-3xl md:text-4xl font-bold mb-4">Presenteie Alguém Especial!</h2>
-                <p class="text-gray-700 text-lg md:text-xl mb-6 font-hand leading-relaxed">
-                    Que tal surpreender quem você ama com um presente único e personalizado? Perfeito para aniversários, Dia das Mães, Natal ou qualquer momento especial!
-                </p>
-                <a href="criar.html" class="btn-sticker btn-pink px-8 py-4 text-xl hover-scale inline-block" aria-label="Criar presente personalizado de livro de colorir">
-                    Fazer um Presente 🎀
-                </a>
-            </div>
-        </section>
 
         <!-- ========================================
              ❓ FAQ (PERGUNTAS FREQUENTES)
@@ -367,7 +394,7 @@
                         <span class="transition-transform group-open:rotate-180 text-2xl" aria-hidden="true">⌄</span>
                     </summary>
                     <div class="px-4 md:px-6 pb-4 md:pb-6 text-gray-600 font-hand text-base md:text-lg border-t-2 border-dashed border-gray-200 pt-4">
-                        É super rápido! Após o pagamento, você envia a foto e em cerca de 5 a 10 minutos recebe o kit completo no seu e-mail.
+                        É super rápido! Após o pagamento, você envia a foto e em cerca de 5 a 10 minutos recebe o ebook de colorir e o link do site de homenagem no seu e-mail.
                     </div>
                 </details>
 
@@ -390,6 +417,46 @@
                         Recomendamos imprimir em papel A4 comum ou papel com gramatura maior (120g ou 180g) se for usar canetinhas fortes ou aquarela!
                     </div>
                 </details>
+
+                <details class="group step-card text-left p-0 overflow-hidden cursor-pointer">
+                    <summary class="flex justify-between items-center p-4 md:p-6 font-bold text-base md:text-lg list-none">
+                        <span>💰 Vale a pena o investimento?</span>
+                        <span class="transition-transform group-open:rotate-180 text-2xl" aria-hidden="true">⌄</span>
+                    </summary>
+                    <div class="px-4 md:px-6 pb-4 md:pb-6 text-gray-600 font-hand text-base md:text-lg border-t-2 border-dashed border-gray-200 pt-4">
+                        Com certeza! Por apenas R$ 47 você recebe um ebook completo de colorir e ainda um site de homenagem único e gratuito. É um presente único que guarda memórias para sempre. Muito mais valioso que qualquer presente comum!
+                    </div>
+                </details>
+
+                <details class="group step-card text-left p-0 overflow-hidden cursor-pointer">
+                    <summary class="flex justify-between items-center p-4 md:p-6 font-bold text-base md:text-lg list-none">
+                        <span>😔 Funciona para pets que já faleceram?</span>
+                        <span class="transition-transform group-open:rotate-180 text-2xl" aria-hidden="true">⌄</span>
+                    </summary>
+                    <div class="px-4 md:px-6 pb-4 md:pb-6 text-gray-600 font-hand text-base md:text-lg border-t-2 border-dashed border-gray-200 pt-4">
+                        Sim! É uma forma linda de homenagear e guardar as memórias do seu pet que partiu. Muitas pessoas fazem isso para ter uma lembrança especial e poder colorir enquanto relembram os momentos felizes juntos.
+                    </div>
+                </details>
+
+                <details class="group step-card text-left p-0 overflow-hidden cursor-pointer">
+                    <summary class="flex justify-between items-center p-4 md:p-6 font-bold text-base md:text-lg list-none">
+                        <span>🎁 Posso fazer para presentear?</span>
+                        <span class="transition-transform group-open:rotate-180 text-2xl" aria-hidden="true">⌄</span>
+                    </summary>
+                    <div class="px-4 md:px-6 pb-4 md:pb-6 text-gray-600 font-hand text-base md:text-lg border-t-2 border-dashed border-gray-200 pt-4">
+                        Claro! É um presente perfeito e único. Você pode fazer para mães, avós, namorados, amigos... Qualquer pessoa que ama pets vai adorar receber um livro de memórias personalizado do seu pet!
+                    </div>
+                </details>
+
+                <details class="group step-card text-left p-0 overflow-hidden cursor-pointer">
+                    <summary class="flex justify-between items-center p-4 md:p-6 font-bold text-base md:text-lg list-none">
+                        <span>❌ E se eu não gostar do resultado?</span>
+                        <span class="transition-transform group-open:rotate-180 text-2xl" aria-hidden="true">⌄</span>
+                    </summary>
+                    <div class="px-4 md:px-6 pb-4 md:pb-6 text-gray-600 font-hand text-base md:text-lg border-t-2 border-dashed border-gray-200 pt-4">
+                        Oferecemos <strong>100% de satisfação ou seu dinheiro de volta</strong>. Se você não ficar feliz com o resultado, devolvemos seu dinheiro sem perguntas. Mas acreditamos que você vai amar! 💝
+                    </div>
+                </details>
             </div>
         </section>
 
@@ -403,8 +470,8 @@
                 <p class="text-gray-700 text-lg md:text-xl mb-8 font-hand leading-relaxed">
                     Clique no botão abaixo e comece a criar seu livro de colorir personalizado agora mesmo!
                 </p>
-                <a href="criar.html" class="btn-sticker btn-pink px-12 py-5 text-2xl md:text-3xl hover-scale inline-block shadow-lg" aria-label="Ir para página de criação do livro">
-                    Criar Meu Livro! 🐾
+                <a href="criar.html" class="btn-sticker btn-pink px-12 py-5 text-2xl md:text-3xl hover-scale inline-block shadow-lg font-bold" aria-label="Ir para página de criação do livro">
+                    Criar Meu Livro Agora - R$ 47 🐾
                 </a>
             </div>
         </section>
@@ -427,8 +494,21 @@
             <span class="text-[10px] text-pink-500 font-bold line-through font-hand" data-price="original">R$ 94,00</span>
             <span class="text-2xl md:text-3xl font-hand font-bold text-gray-900 leading-none" data-price="promotional">R$ 47,00</span>
         </div>
-        <a href="criar.html" class="flex-1 btn-sticker btn-green py-3 text-base md:text-xl font-bold text-center shadow-none">
-            Quero Agora! 🎨
+        <a href="criar.html" class="flex-1 btn-sticker btn-pink py-3 text-base md:text-xl font-bold text-center shadow-none">
+            Criar Agora - R$ 47 🎨
+        </a>
+    </div>
+
+    <!-- ========================================
+         💻 CTA FIXO DESKTOP
+         ======================================== -->
+    <div class="cta-fixed-desktop">
+        <a href="criar.html" class="btn-sticker btn-pink px-6 py-4 text-lg font-bold shadow-lg hover-scale" aria-label="Criar meu livro de colorir agora">
+            <div class="flex flex-col items-center">
+                <span class="text-xs line-through text-gray-400 mb-1" data-price="original">R$ 94</span>
+                <span class="text-xl" data-price="promotional">R$ 47</span>
+                <span class="text-sm mt-1">Criar Agora 🎨</span>
+            </div>
         </a>
     </div>
 
