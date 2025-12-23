@@ -180,6 +180,7 @@ class PDFService:
         generated_art_paths: List[str],
         output_dir: str = ".",
         original_image_paths: Optional[List[str]] = None,
+        sticker_paths: Optional[List[str]] = None,
     ) -> str:
         """Create a digital kit PDF with multiple pages: cover, biography, coloring pages, and sticker grid.
         
@@ -190,6 +191,7 @@ class PDFService:
             generated_art_paths: List of paths to generated art images (line art)
             output_dir: Directory to save the PDF
             original_image_paths: List of paths to original photos - used for biography page
+            sticker_paths: List of paths to sticker images. If None, uses generated_art_paths as fallback
             
         Returns:
             Path to the created PDF file
@@ -406,7 +408,7 @@ class PDFService:
                 logger.error(f"Error adding coloring page {idx} image: {e}")
         
         # ============================================
-        # LAST PAGE: STICKERS (Adesivos) - Grid 3x3 - Uses generated arts
+        # LAST PAGE: STICKERS (Adesivos) - Grid 3x3 - Uses sticker images if available
         # ============================================
         pdf.add_page()
         
@@ -415,6 +417,9 @@ class PDFService:
         pdf.set_y(15)
         pdf.cell(0, 12, "Adesivos", ln=1, align="C")
         
+        # Use sticker_paths if provided, otherwise fallback to generated_art_paths
+        sticker_images = sticker_paths if sticker_paths and len(sticker_paths) > 0 else generated_art_paths
+        
         # Grid 3x3 configuration (9 stickers total)
         sticker_size = 50
         spacing = 10
@@ -422,16 +427,16 @@ class PDFService:
         start_x = (self.A4_WIDTH_MM - grid_width) / 2
         start_y = 40
         
-        # Fill grid with arts (repeat if necessary to fill 9 slots)
-        art_index = 0
+        # Fill grid with stickers (repeat if necessary to fill 9 slots)
+        sticker_index = 0
         for row in range(3):
             for col in range(3):
-                # Cycle through available arts
-                art_path = generated_art_paths[art_index % len(generated_art_paths)]
-                art_index += 1
+                # Cycle through available stickers
+                sticker_path = sticker_images[sticker_index % len(sticker_images)]
+                sticker_index += 1
                 
                 try:
-                    img = Image.open(art_path)
+                    img = Image.open(sticker_path)
                     if img.mode != "RGB":
                         img = img.convert("RGB")
                     
@@ -444,7 +449,7 @@ class PDFService:
                     
                     pdf.image(temp_buffer, x=x, y=y, w=sticker_size, h=sticker_size)
                 except Exception as e:
-                    logger.error(f"Error adding sticker {row * 3 + col + 1} from art {art_path}: {e}")
+                    logger.error(f"Error adding sticker {row * 3 + col + 1} from {sticker_path}: {e}")
         
         # Save PDF
         os.makedirs(output_dir, exist_ok=True)

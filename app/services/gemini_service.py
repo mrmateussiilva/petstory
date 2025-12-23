@@ -14,6 +14,9 @@ from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
+# Export prompts for use in other modules
+__all__ = ["BOBBIE_GOODS_PROMPT", "STICKER_PROMPT", "GeminiGenerator"]
+
 # System Prompt para estilo Bobbie Goods
 # BOBBIE_GOODS_PROMPT = (
 #     "Create a vector-style coloring book page of this pet, reimagined as a 'Bobbie Goods' character. "
@@ -62,6 +65,42 @@ BOBBIE_GOODS_PROMPT = (
     "FINAL OUTPUT:\n"
     "- Clean, printable coloring book page.\n"
     "- No artistic style exaggeration.\n"
+)
+
+# Prompt específico para adesivos (stickers)
+STICKER_PROMPT = (
+    "Convert this pet photo into a sticker-style illustration optimized for small format printing.\n\n"
+    
+    "CORE GOAL:\n"
+    "- Create a simplified, cute version of the pet suitable for stickers.\n"
+    "- The pet should be recognizable but stylized for sticker use.\n\n"
+    
+    "STICKER-SPECIFIC REQUIREMENTS:\n"
+    "- Design should work well at small sizes (2-3cm).\n"
+    "- Use bold, clear outlines that remain visible when small.\n"
+    "- Simplify details while keeping the pet's character.\n"
+    "- Make the pet look friendly and appealing.\n\n"
+    
+    "STYLE RULES:\n"
+    "- Black-and-white line art (no colors).\n"
+    "- Thicker outlines than regular coloring pages (for visibility at small size).\n"
+    "- Simplified features: larger eyes, simpler shapes.\n"
+    "- Cute, kawaii-inspired style works well for stickers.\n\n"
+    
+    "COMPOSITION:\n"
+    "- Center the pet in the frame.\n"
+    "- Leave some white space around edges (for sticker border).\n"
+    "- Pet should fill most of the frame but not touch edges.\n\n"
+    
+    "TECHNICAL:\n"
+    "- Pure white background.\n"
+    "- Black lines only, no shading.\n"
+    "- High contrast for clear printing at small sizes.\n"
+    "- Clean, vector-like appearance.\n\n"
+    
+    "FINAL OUTPUT:\n"
+    "- Sticker-ready illustration that looks great when printed small.\n"
+    "- Cute, recognizable pet character suitable for adhesive stickers.\n"
 )
 
 
@@ -279,5 +318,58 @@ class GeminiGenerator:
             
         except Exception as e:
             logger.error(f"Error generating art from {photo_path}: {str(e)}", exc_info=True)
+            raise
+    
+    def generate_sticker(self, photo_path: str, output_dir: Optional[str] = None) -> str:
+        """Generate sticker-style art from a pet photo file and save to disk.
+        
+        Args:
+            photo_path: Path to the input pet photo
+            output_dir: Directory to save the generated sticker. If None, saves in same dir as photo.
+            
+        Returns:
+            Path to the generated sticker image file
+            
+        Raises:
+            Exception: If generation fails
+        """
+        try:
+            # Read photo from file
+            with open(photo_path, "rb") as f:
+                photo_bytes = f.read()
+            
+            logger.info(f"Generating sticker from photo: {photo_path}")
+            
+            # Generate sticker using the async method (sync wrapper)
+            import asyncio
+            try:
+                loop = asyncio.get_event_loop()
+            except RuntimeError:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+            
+            sticker_bytes = loop.run_until_complete(
+                self.generate(photo_bytes, STICKER_PROMPT)
+            )
+            
+            # Determine output path
+            if output_dir is None:
+                output_dir = os.path.dirname(photo_path)
+            
+            os.makedirs(output_dir, exist_ok=True)
+            
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            output_filename = f"sticker_{timestamp}.png"
+            output_path = os.path.join(output_dir, output_filename)
+            
+            # Save generated sticker
+            with open(output_path, "wb") as f:
+                f.write(sticker_bytes)
+            
+            logger.info(f"Sticker saved to: {output_path}")
+            return output_path
+            
+        except Exception as e:
+            logger.error(f"Error generating sticker from {photo_path}: {str(e)}", exc_info=True)
             raise
 

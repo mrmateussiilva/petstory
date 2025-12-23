@@ -92,6 +92,39 @@ def process_pet_story(
         
         print(f"✅ {len(generated_arts)} arte(s) gerada(s) com sucesso!")
         
+        # Step 1.5: Generate stickers for sticker page (using first photo or all photos)
+        print(f"🎨 Passo 1.5/4: Gerando adesivos (stickers) para {len(photo_paths)} foto(s)...")
+        generated_stickers = []
+        
+        # Generate stickers from the same photos (or just first few to save API calls)
+        # For now, generate stickers from all photos (or limit to first 3 to save costs)
+        sticker_photos = photo_paths[:3] if len(photo_paths) > 3 else photo_paths
+        
+        for idx, photo_path in enumerate(sticker_photos, 1):
+            try:
+                print(f"  🎨 Gerando adesivo {idx}/{len(sticker_photos)}: {os.path.basename(photo_path)}")
+                sticker_path = gemini_service.generate_sticker(photo_path, output_dir=user_temp_dir)
+                generated_stickers.append(sticker_path)
+                print(f"  ✅ Adesivo {idx} gerado: {sticker_path}")
+                
+                # Sleep between generations to avoid rate limit (except for last one)
+                if idx < len(sticker_photos):
+                    print(f"  ⏳ Aguardando 2 segundos antes da próxima geração de adesivo...")
+                    time.sleep(2)
+                    
+            except Exception as e:
+                print(f"  ❌ Erro ao gerar adesivo para foto {idx}: {str(e)}")
+                logger.error(f"Error generating sticker for photo {idx}: {e}", exc_info=True)
+                # Continue processing other photos
+                continue
+        
+        # If no stickers were generated, use arts as fallback
+        if not generated_stickers:
+            print(f"  ⚠️ Nenhum adesivo foi gerado, usando artes principais como fallback")
+            generated_stickers = generated_arts[:3]  # Use first 3 arts as fallback
+        
+        print(f"✅ {len(generated_stickers)} adesivo(s) gerado(s) com sucesso!")
+        
         # Step 2: Create PDF with create_digital_kit
         print(f"📄 Passo 2/4: Criando PDF do kit digital...")
         try:
@@ -101,6 +134,7 @@ def process_pet_story(
                 pet_story=pet_story,
                 original_image_paths=photo_paths,
                 generated_art_paths=generated_arts,
+                sticker_paths=generated_stickers,  # Pass stickers separately
                 output_dir=user_temp_dir,
             )
             print(f"✅ PDF criado com sucesso: {pdf_path}")
@@ -167,7 +201,9 @@ def process_pet_story(
             "email": email,
             "photos_count": len(photo_data_list),
             "arts_generated": len(generated_arts),
+            "stickers_generated": len(generated_stickers),
             "art_paths": generated_arts,
+            "sticker_paths": generated_stickers,
             "pdf_path": pdf_path,
             "html_path": html_path,
             "email_sent": email_sent,

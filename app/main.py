@@ -5,14 +5,25 @@ import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import BackgroundTasks, FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import (
+    BackgroundTasks,
+    FastAPI,
+    File,
+    Form,
+    HTTPException,
+    Query,
+    Request,
+    UploadFile,
+)
 from typing import List
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 
 from app.core.config import settings
 from app.services.email_service import EmailService
 from app.services.gemini_service import GeminiGenerator
+from app.services.payment_service import PaymentService
+from app.services.payment_storage import payment_storage
 from app.worker import process_pet_story
 
 # Configure logging
@@ -25,18 +36,30 @@ logger = logging.getLogger(__name__)
 # Global instances (initialized in lifespan)
 gemini_service: GeminiGenerator = None
 email_service: EmailService = None
+payment_service: PaymentService = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan manager."""
-    global gemini_service, email_service
+    global gemini_service, email_service, payment_service
     
     # Initialize services on startup
     logger.info("Initializing services...")
     try:
         gemini_service = GeminiGenerator()
         email_service = EmailService()
+        # Initialize payment service only if token is configured
+        if settings.MERCADOPAGO_ACCESS_TOKEN:
+            try:
+                payment_service = PaymentService()
+                logger.info("Payment service initialized successfully")
+            except Exception as e:
+                logger.warning(f"Payment service not available: {e}")
+                payment_service = None
+        else:
+            logger.warning("MERCADOPAGO_ACCESS_TOKEN not set - payment features disabled")
+            payment_service = None
         logger.info("Services initialized successfully")
     except Exception as e:
         logger.error(f"Error initializing services: {e}", exc_info=True)
@@ -90,6 +113,169 @@ async def health():
     return {"status": "healthy"}
 
 
+@app.post("/api/payment/create")
+async def create_payment(
+    email: str = Form(...),
+    pet_name: str = Form(...),
+):
+    """Create a Mercado Pago payment preference.
+    
+    Args:
+        email: Customer email
+        pet_name: Pet name
+        
+    Returns:
+        JSON response with checkout URL
+    """
+    if not payment_service:
+        raise HTTPException(status_code=503, detail="Payment service not configured")
+    
+    # Validate email
+    if not email or "@" not in email:
+        raise HTTPException(status_code=400, detail="Email inválido")
+    
+    # Validate pet name
+    if not pet_name or not pet_name.strip():
+        raise HTTPException(status_code=400, detail="Nome do pet é obrigatório")
+    
+    try:
+        base_url = settings.API_BASE_URL.rstrip("/")
+        success_url = f"{base_url}/api/payment/success?email={email}&pet_name={pet_name}"
+        failure_url = f"{base_url}/api/payment/failure"
+        pending_url = f"{base_url}/api/payment/pending"
+        
+        preference = payment_service.create_payment_preference(
+            email=email.strip(),
+            pet_name=pet_name.strip(),
+            success_url=success_url,
+            failure_url=failure_url,
+            pending_url=pending_url,
+        )
+        
+        # Use sandbox URL if available (for testing), otherwise use init_point
+        checkout_url = preference.get("sandbox_init_point") or preference.get("init_point")
+        
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "success",
+                "checkout_url": checkout_url,
+                "preference_id": preference.get("id"),
+            },
+        )
+    except Exception as e:
+        logger.error(f"Error creating payment: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Erro ao criar pagamento: {str(e)}")
+
+
+@app.post("/api/payment/webhook")
+async def payment_webhook(request: Request):
+    """Handle Mercado Pago webhook notifications.
+    
+    This endpoint receives notifications when payment status changes.
+    """
+    try:
+        data = await request.json()
+        logger.info(f"Received webhook: {data}")
+        
+        # Extract payment information
+        if "data" in data and "id" in data["data"]:
+            payment_id = data["data"]["id"]
+            
+            # Get payment info from Mercado Pago
+            if payment_service:
+                payment_info = payment_service.get_payment_info(payment_id)
+                if payment_info:
+                    status = payment_info.get("status")
+                    email = payment_info.get("payer", {}).get("email", "")
+                    external_reference = payment_info.get("external_reference", "")
+                    
+                    # Extract pet name from external_reference if possible
+                    pet_name = None
+                    if external_reference:
+                        parts = external_reference.split("_")
+                        if len(parts) >= 2:
+                            pet_name = parts[1] if len(parts) > 1 else None
+                    
+                    # Save payment status
+                    payment_storage.save_payment(
+                        payment_id=payment_id,
+                        status=status,
+                        email=email,
+                        pet_name=pet_name,
+                        external_reference=external_reference,
+                    )
+                    
+                    logger.info(f"Payment {payment_id} status updated to {status} for {email}")
+        
+        return JSONResponse(status_code=200, content={"status": "ok"})
+        
+    except Exception as e:
+        logger.error(f"Error processing webhook: {e}", exc_info=True)
+        return JSONResponse(status_code=500, content={"status": "error", "message": str(e)})
+
+
+@app.get("/api/payment/success")
+async def payment_success(
+    email: str = Query(...),
+    pet_name: str = Query(...),
+    payment_id: str = Query(None),
+    status: str = Query(None),
+):
+    """Handle successful payment redirect.
+    
+    Redirects user to upload page or returns success message.
+    """
+    # If payment_id is provided, verify it
+    if payment_id and payment_service:
+        payment_info = payment_service.get_payment_info(payment_id)
+        if payment_info:
+            status = payment_info.get("status")
+            # Save payment status
+            payment_storage.save_payment(
+                payment_id=payment_id,
+                status=status,
+                email=email,
+                pet_name=pet_name,
+            )
+    
+    # Return success page (frontend should redirect to upload form)
+    return JSONResponse(
+        status_code=200,
+        content={
+            "status": "success",
+            "message": "Pagamento aprovado! Agora você pode enviar as fotos do seu pet.",
+            "email": email,
+            "pet_name": pet_name,
+            "upload_url": f"/api/upload",
+        },
+    )
+
+
+@app.get("/api/payment/failure")
+async def payment_failure():
+    """Handle failed payment redirect."""
+    return JSONResponse(
+        status_code=200,
+        content={
+            "status": "failure",
+            "message": "Pagamento não foi aprovado. Tente novamente.",
+        },
+    )
+
+
+@app.get("/api/payment/pending")
+async def payment_pending():
+    """Handle pending payment redirect."""
+    return JSONResponse(
+        status_code=200,
+        content={
+            "status": "pending",
+            "message": "Pagamento está sendo processado. Você receberá um e-mail quando for aprovado.",
+        },
+    )
+
+
 @app.post("/api/upload")
 async def upload_pet_story(
     background_tasks: BackgroundTasks,
@@ -98,6 +284,7 @@ async def upload_pet_story(
     pet_story: str = Form(...),
     email: str = Form(...),
     fotos: List[UploadFile] = File(...),
+    payment_id: str = Form(None),  # Optional payment ID for verification
 ):
     """Process pet story submission with multiple photos.
     
@@ -108,6 +295,7 @@ async def upload_pet_story(
         pet_story: Pet's story/biography
         email: Recipient email address
         fotos: List of uploaded pet photo files (1-10 photos)
+        payment_id: Optional payment ID to verify payment
         
     Returns:
         JSON response with job status
@@ -122,6 +310,27 @@ async def upload_pet_story(
     
     if not pet_story or not pet_story.strip():
         raise HTTPException(status_code=400, detail="História do pet é obrigatória")
+    
+    # Verify payment if payment service is enabled
+    if payment_service:
+        payment_verified = False
+        
+        # If payment_id is provided, verify it
+        if payment_id:
+            if payment_service.is_payment_approved(payment_id):
+                payment_verified = True
+                logger.info(f"Payment {payment_id} verified for {email}")
+        else:
+            # Check if user has any approved payment for this pet
+            if payment_storage.can_upload(email, nome_pet):
+                payment_verified = True
+                logger.info(f"Payment verified from storage for {email} - {nome_pet}")
+        
+        if not payment_verified:
+            raise HTTPException(
+                status_code=402,
+                detail="Pagamento não verificado. Por favor, complete o pagamento primeiro.",
+            )
     
     # Validate files
     if not fotos or len(fotos) == 0:

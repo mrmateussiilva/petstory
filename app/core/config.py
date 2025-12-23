@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     # Application
     APP_NAME: str = "PetStory API"
     DEBUG: bool = False
+    API_BASE_URL: str = "http://localhost:8000"  # Base URL da API (para webhooks e redirects)
 
     # Worker Configuration
     WORKER_SLEEP_SECONDS: float = 2.0  # Delay entre gerações para evitar rate limit
@@ -34,6 +35,12 @@ class Settings(BaseSettings):
 
     # Gemini Model Configuration
     GEMINI_IMAGE_MODEL: str = "gemini-2.5-flash-image"  # ou "gemini-3-pro-image-preview"
+
+    # Mercado Pago Configuration
+    MERCADOPAGO_ACCESS_TOKEN: str = ""  # Access token do Mercado Pago
+    MERCADOPAGO_PUBLIC_KEY: str = ""  # Public key (opcional, para frontend)
+    MERCADOPAGO_PRODUCT_PRICE: float = 47.0  # Preço do produto em reais
+    MERCADOPAGO_WEBHOOK_SECRET: str = ""  # Secret para validar webhooks (opcional)
 
     # CORS Configuration
     # Pode ser uma string JSON ou valores separados por vírgula
