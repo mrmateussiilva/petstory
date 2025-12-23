@@ -67,40 +67,45 @@ BOBBIE_GOODS_PROMPT = (
     "- No artistic style exaggeration.\n"
 )
 
-# Prompt específico para adesivos (stickers)
+# Prompt específico para adesivos (stickers), inspirado em cartelas coloridas com contorno branco
 STICKER_PROMPT = (
-    "Convert this pet photo into a sticker-style illustration optimized for small format printing.\n\n"
-    
-    "CORE GOAL:\n"
-    "- Create a simplified, cute version of the pet suitable for stickers.\n"
-    "- The pet should be recognizable but stylized for sticker use.\n\n"
-    
-    "STICKER-SPECIFIC REQUIREMENTS:\n"
-    "- Design should work well at small sizes (2-3cm).\n"
-    "- Use bold, clear outlines that remain visible when small.\n"
-    "- Simplify details while keeping the pet's character.\n"
-    "- Make the pet look friendly and appealing.\n\n"
-    
-    "STYLE RULES:\n"
-    "- Black-and-white line art (no colors).\n"
-    "- Thicker outlines than regular coloring pages (for visibility at small size).\n"
-    "- Simplified features: larger eyes, simpler shapes.\n"
-    "- Cute, kawaii-inspired style works well for stickers.\n\n"
-    
+    "Create a colorful sticker sheet style illustration of this pet, similar to kawaii pet sticker sheets.\n\n"
+
+    "OVERALL STYLE (VERY IMPORTANT):\n"
+    "- Cute, cartoon / kawaii style.\n"
+    "- Use flat, vibrant colors (no gradients, no complex shading).\n"
+    "- Strong black outline around the drawing.\n"
+    "- Add a THICK WHITE BORDER around the entire sticker shape (die-cut sticker style).\n"
+    "- The sticker must look like it was cut out from a sticker sheet.\n\n"
+
+    "PET DESIGN:\n"
+    "- The pet must be clearly recognizable from the photo.\n"
+    "- Slightly exaggerate cuteness: bigger head, bigger eyes, softer body shapes.\n"
+    "- Keep main colors of the real pet (fur color, spots, etc.).\n"
+    "- Use clean, simple shapes and minimal details so it works at small size.\n\n"
+
+    "DECORATIVE ELEMENTS:\n"
+    "- Around or near the pet, you MAY add small extra icons:\n"
+    "  hearts, paw prints, bones, fish, food bowls, toys, etc.\n"
+    "- These icons should also have black outline and thick white border.\n"
+    "- Do NOT add text inside the sticker.\n\n"
+
     "COMPOSITION:\n"
-    "- Center the pet in the frame.\n"
-    "- Leave some white space around edges (for sticker border).\n"
-    "- Pet should fill most of the frame but not touch edges.\n\n"
-    
+    "- Center the pet.\n"
+    "- Leave enough empty space around the pet for the white border.\n"
+    "- Avoid cropping ears or tail: the full pet must fit inside the sticker.\n\n"
+
+    "BACKGROUND:\n"
+    "- Use a pure white background behind the sticker (so it blends with the page).\n"
+    "- The sticker itself must be visually separated by the thick white border.\n\n"
+
     "TECHNICAL:\n"
-    "- Pure white background.\n"
-    "- Black lines only, no shading.\n"
-    "- High contrast for clear printing at small sizes.\n"
-    "- Clean, vector-like appearance.\n\n"
-    
+    "- High resolution, sharp lines.\n"
+    "- High contrast outlines so the shape is clear when printed small (2–3 cm).\n"
+    "- No photographic textures. 100% illustrated look.\n\n"
+
     "FINAL OUTPUT:\n"
-    "- Sticker-ready illustration that looks great when printed small.\n"
-    "- Cute, recognizable pet character suitable for adhesive stickers.\n"
+    "- A single sticker-style illustration of the pet, ready to be printed on a sticker sheet.\n"
 )
 
 
