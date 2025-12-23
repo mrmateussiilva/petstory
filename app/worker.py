@@ -22,7 +22,9 @@ def process_pet_story(
     pet_date: str,
     pet_story: str,
     email: str,
-    photo_paths: List[str],
+    order_temp_dir: str,
+    photo_data_list: List[dict],
+    timestamp: str,
 ) -> dict:
     """Orchestrate the complete pet story processing workflow.
     
@@ -31,22 +33,37 @@ def process_pet_story(
         pet_date: Pet's date/birthday
         pet_story: Pet's story/biography
         email: User email address
-        photo_paths: List of paths to uploaded pet photos
+        order_temp_dir: Directory where files for this order will be saved
+        photo_data_list: List of dicts with photo data: {"bytes": bytes, "filename": str, "original_filename": str}
+        timestamp: Timestamp string for this order
         
     Returns:
         Dictionary with processing results
     """
-    print(f"🚀 Iniciando processamento da história de {nome_pet} com {len(photo_paths)} foto(s)...")
+    print(f"🚀 Iniciando processamento da história de {nome_pet} com {len(photo_data_list)} foto(s)...")
     
     try:
+        # Ensure order directory exists
+        Path(order_temp_dir).mkdir(parents=True, exist_ok=True)
+        
+        # Step 0: Save photos to disk (they were only in memory before)
+        print(f"💾 Salvando {len(photo_data_list)} foto(s) no disco...")
+        photo_paths = []
+        for idx, photo_data in enumerate(photo_data_list, 1):
+            photo_path = os.path.join(order_temp_dir, photo_data["filename"])
+            with open(photo_path, "wb") as f:
+                f.write(photo_data["bytes"])
+            photo_paths.append(photo_path)
+            print(f"  ✅ Foto {idx} salva: {photo_data['original_filename']} -> {photo_path}")
+        
         # Initialize services
         gemini_service = GeminiGenerator()
         pdf_service = PDFService()
         web_generator = WebGenerator()
         email_service = EmailService()
         
-        # Get user temp directory (all photos are in the same directory)
-        user_temp_dir = os.path.dirname(photo_paths[0])
+        # Use order temp directory for all files
+        user_temp_dir = order_temp_dir
         
         # Step 1: Generate art with Gemini for each photo
         print(f"📸 Passo 1/4: Gerando arte com IA para {len(photo_paths)} foto(s)...")
@@ -148,7 +165,7 @@ def process_pet_story(
             "success": True,
             "nome_pet": nome_pet,
             "email": email,
-            "photos_count": len(photo_paths),
+            "photos_count": len(photo_data_list),
             "arts_generated": len(generated_arts),
             "art_paths": generated_arts,
             "pdf_path": pdf_path,

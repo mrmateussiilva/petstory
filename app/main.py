@@ -149,7 +149,10 @@ async def upload_pet_story(
         
         logger.info(f"Created unique order directory: {order_temp_dir} for {nome_pet} ({email})")
         
-        # Process each photo
+        # Read photos into memory (don't save to disk yet - let background task do it)
+        # This allows the API to return immediately
+        photo_data_list = []
+        
         for idx, foto in enumerate(fotos, 1):
             # Validate content type
             if foto.content_type not in allowed_content_types:
@@ -159,7 +162,7 @@ async def upload_pet_story(
                     f"Tipos permitidos: {', '.join(allowed_content_types)}",
                 )
             
-            # Read photo
+            # Read photo into memory
             photo_bytes = await foto.read()
             if len(photo_bytes) == 0:
                 raise HTTPException(status_code=400, detail=f"Arquivo da foto {idx} está vazio")
@@ -168,27 +171,30 @@ async def upload_pet_story(
             if len(photo_bytes) > 10 * 1024 * 1024:
                 raise HTTPException(status_code=400, detail=f"Foto {idx} ({foto.filename}) excede o limite de 10MB")
             
-            # Save photo temporarily
+            # Store photo data (will be saved by background task)
             photo_filename = f"foto_{idx}_{timestamp}{Path(foto.filename).suffix}"
-            photo_path = os.path.join(order_temp_dir, photo_filename)
+            photo_data_list.append({
+                "bytes": photo_bytes,
+                "filename": photo_filename,
+                "original_filename": foto.filename,
+            })
             
-            with open(photo_path, "wb") as f:
-                f.write(photo_bytes)
-            
-            photo_paths.append(photo_path)
-            logger.info(f"Received photo {idx}/{len(fotos)}: {foto.filename} ({len(photo_bytes)} bytes) -> {photo_path}")
+            logger.info(f"Received photo {idx}/{len(fotos)}: {foto.filename} ({len(photo_bytes)} bytes) - queued for background processing")
         
-        # Add background task with list of photo paths
+        # Add background task with photo data (not paths)
+        # The background task will save photos to disk and process them
         background_tasks.add_task(
             process_pet_story,
             nome_pet=nome_pet.strip(),
             pet_date=pet_date.strip(),
             pet_story=pet_story.strip(),
             email=email.strip(),
-            photo_paths=photo_paths,
+            order_temp_dir=order_temp_dir,
+            photo_data_list=photo_data_list,
+            timestamp=timestamp,
         )
         
-        logger.info(f"Background task queued for {nome_pet} ({email}) with {len(photo_paths)} photos")
+        logger.info(f"Background task queued for {nome_pet} ({email}) with {len(photo_data_list)} photos")
         
         return JSONResponse(
             status_code=200,
@@ -197,7 +203,7 @@ async def upload_pet_story(
                 "message": f"História de {nome_pet} está sendo processada! Você receberá um e-mail em {email} quando estiver pronta.",
                 "nome_pet": nome_pet,
                 "email": email,
-                "fotos_count": len(photo_paths),
+                "fotos_count": len(photo_data_list),
             },
         )
         
