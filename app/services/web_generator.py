@@ -3,6 +3,7 @@
 import base64
 import logging
 from pathlib import Path
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -10,9 +11,45 @@ logger = logging.getLogger(__name__)
 class WebGenerator:
     """Service for generating HTML tribute pages."""
 
-    def __init__(self):
-        """Initialize web generator service."""
-        pass
+    def __init__(self, template_path: Optional[str] = None):
+        """Initialize web generator service.
+        
+        Args:
+            template_path: Path to HTML template file. If None, uses default.
+        """
+        if template_path is None:
+            # Default template path relative to this file
+            template_dir = Path(__file__).parent / "templates"
+            template_path = template_dir / "homenagem_template.html"
+        
+        self.template_path = Path(template_path)
+        
+        # Validate template exists
+        if not self.template_path.exists():
+            raise FileNotFoundError(
+                f"Template file not found: {self.template_path}. "
+                f"Please create the template file or provide a valid path."
+            )
+        
+        logger.info(f"WebGenerator initialized with template: {self.template_path}")
+
+    def _load_template(self) -> str:
+        """Load HTML template from file.
+        
+        Returns:
+            Template content as string
+            
+        Raises:
+            IOError: If template file cannot be read
+        """
+        try:
+            with open(self.template_path, "r", encoding="utf-8") as f:
+                template_content = f.read()
+            logger.debug(f"Template loaded successfully from {self.template_path}")
+            return template_content
+        except Exception as e:
+            logger.error(f"Error loading template from {self.template_path}: {e}")
+            raise
 
     def generate_tribute_page(
         self,
@@ -41,84 +78,22 @@ class WebGenerator:
                 ext = Path(art_image_path).suffix.lower()
                 mime_type = "image/png" if ext == ".png" else "image/jpeg"
                 image_data_uri = f"data:{mime_type};base64,{image_base64}"
+            logger.debug(f"Image encoded successfully: {len(image_data)} bytes")
         except Exception as e:
             logger.error(f"Error reading image for web page: {e}")
             image_data_uri = ""  # Fallback to empty image
         
-        html = f"""<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Homenagem a {pet_name} - PetStory</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
-        body {{
-            font-family: 'Poppins', sans-serif;
-        }}
-    </style>
-</head>
-<body class="bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50 min-h-screen">
-    <div class="container mx-auto px-4 py-12 max-w-4xl">
-        <!-- Header -->
-        <div class="text-center mb-12">
-            <h1 class="text-5xl font-bold text-purple-800 mb-4">
-                🐾 Homenagem Especial 🐾
-            </h1>
-            <h2 class="text-4xl font-semibold text-indigo-700 mb-2">
-                {pet_name}
-            </h2>
-            <p class="text-xl text-gray-600">
-                {pet_date}
-            </p>
-        </div>
+        # Load template
+        template = self._load_template()
         
-        <!-- Main Content Card -->
-        <div class="bg-white rounded-3xl shadow-2xl overflow-hidden mb-8">
-            <!-- Art Image -->
-            <div class="bg-gradient-to-r from-pink-100 to-purple-100 p-8">
-                <div class="flex justify-center">
-                    <img 
-                        src="{image_data_uri}" 
-                        alt="Arte de {pet_name}" 
-                        class="rounded-2xl shadow-lg max-w-full h-auto max-h-96 object-contain"
-                    >
-                </div>
-            </div>
-            
-            <!-- Story Section -->
-            <div class="p-8 md:p-12">
-                <h3 class="text-3xl font-bold text-purple-800 mb-6 text-center">
-                    Quem é {pet_name}?
-                </h3>
-                <div class="prose prose-lg max-w-none">
-                    <p class="text-gray-700 leading-relaxed text-lg whitespace-pre-line">
-                        {pet_story}
-                    </p>
-                </div>
-            </div>
-        </div>
+        # Replace placeholders
+        html = template.format(
+            pet_name=pet_name,
+            pet_date=pet_date,
+            pet_story=pet_story,
+            image_data_uri=image_data_uri,
+        )
         
-        <!-- Footer -->
-        <div class="text-center text-gray-600 mt-8">
-            <p class="text-sm">
-                Criado com ❤️ pelo PetStory
-            </p>
-            <p class="text-xs mt-2">
-                Transformando memórias em arte
-            </p>
-        </div>
-    </div>
-    
-    <!-- Decorative elements -->
-    <div class="fixed top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-0">
-        <div class="absolute top-20 left-10 w-32 h-32 bg-pink-200 rounded-full opacity-20 blur-3xl"></div>
-        <div class="absolute bottom-20 right-10 w-40 h-40 bg-purple-200 rounded-full opacity-20 blur-3xl"></div>
-        <div class="absolute top-1/2 left-1/4 w-24 h-24 bg-indigo-200 rounded-full opacity-20 blur-2xl"></div>
-    </div>
-</body>
-</html>"""
-        
+        logger.info(f"Tribute page generated successfully for {pet_name}")
         return html
 
