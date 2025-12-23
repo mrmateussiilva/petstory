@@ -1,0 +1,681 @@
+        /* ========================================
+           📐 STYLEGUIDE - VARIÁVEIS E PADRÕES
+           ======================================== */
+        :root {
+            /* Cores */
+            --paper-white: #ffffff;
+            --desk-bg: #fdf6e3;
+            --ink-black: #2d2d2d;
+            --pastel-pink: #ffdae0;
+            --pastel-green: #d4eac8;
+            --pastel-blue: #cceeff;
+            --pastel-yellow: #fff5ba;
+            --pastel-purple: #e6dff0;
+            
+            /* Espaçamentos (múltiplos de 4px) */
+            --space-xs: 0.5rem;    /* 8px */
+            --space-sm: 1rem;      /* 16px */
+            --space-md: 1.5rem;    /* 24px */
+            --space-lg: 2rem;      /* 32px */
+            --space-xl: 3rem;      /* 48px */
+            --space-2xl: 4rem;     /* 64px */
+            --space-3xl: 5rem;     /* 80px */
+            
+            /* Sombras */
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+            --shadow-md: 8px 8px 0px rgba(45, 45, 45, 0.08);
+            --shadow-lg: 15px 20px 30px rgba(0,0,0,0.15);
+            --shadow-sticker: 5px 5px 0px var(--ink-black);
+            
+            /* Bordas */
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
+            --border-width: 3px;
+        }
+
+        /* ========================================
+           🎨 BASE STYLES
+           ======================================== */
+        body { 
+            font-family: 'Fredoka', sans-serif;
+            background-color: var(--desk-bg);
+            color: var(--ink-black);
+            overflow-x: hidden;
+            background-image: radial-gradient(#d8d4c9 2px, transparent 2px);
+            background-size: 24px 24px;
+            padding-bottom: 100px;
+            line-height: 1.6;
+        }
+        
+        /* Acessibilidade - Reduzir animações se solicitado */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+
+        h1, h2, h3, h4, .handwritten { 
+            font-family: 'Patrick Hand', cursive;
+            line-height: 1.2;
+        }
+
+        /* ========================================
+           ✨ ANIMAÇÕES E MICRO-INTERACTIONS
+           ======================================== */
+        
+        /* Fade In Suave */
+        @keyframes fadeInUp {
+            from { 
+                opacity: 0; 
+                transform: translateY(20px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+        
+        .reveal {
+            opacity: 0;
+        }
+        
+        .reveal.active {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        /* Fade In Suave */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+
+        /* Wiggle (Tremidinha) */
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(-2deg); }
+            50% { transform: rotate(2deg); }
+        }
+        
+        .hover-wiggle:hover {
+            animation: wiggle 0.4s ease-in-out infinite;
+        }
+
+        /* Marcador Mágico */
+        @keyframes drawLine {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+        
+        .marker-anim {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .marker-anim::after {
+            content: '';
+            position: absolute;
+            left: -5px;
+            bottom: 5px;
+            height: 15px;
+            width: 0;
+            background-color: var(--pastel-pink);
+            z-index: -1;
+            transform: rotate(-1deg);
+            border-radius: 4px;
+            opacity: 0.7;
+            animation: drawLine 1s cubic-bezier(0.22, 1, 0.36, 1) 0.5s forwards;
+        }
+
+        /* Flutuação Suave */
+        @keyframes floatY {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        .animate-float { 
+            animation: floatY 6s ease-in-out infinite; 
+        }
+        
+        .delay-1000 { animation-delay: 1s; }
+        .delay-2000 { animation-delay: 2s; }
+        .delay-3000 { animation-delay: 3s; }
+
+        /* Scale Hover */
+        @keyframes scalePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .hover-scale:hover {
+            transform: scale(1.05);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* Slide In */
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .slide-in-left { animation: slideInLeft 0.6s ease-out forwards; }
+        .slide-in-right { animation: slideInRight 0.6s ease-out forwards; }
+
+        /* ========================================
+           📄 PAPEL PRINCIPAL (MASTER PAPER)
+           ======================================== */
+        .master-paper {
+            background-color: var(--paper-white);
+            max-width: 1000px;
+            margin: 40px auto;
+            border: var(--border-width) solid var(--ink-black);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-md);
+            position: relative;
+            padding: var(--space-xl);
+            overflow: hidden;
+            background-image: linear-gradient(#f4f4f4 1px, transparent 1px);
+            background-size: 100% 40px;
+        }
+        
+        .binder-holes {
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            z-index: 10;
+        }
+        
+        .hole {
+            width: 25px;
+            height: 25px;
+            background-color: var(--desk-bg);
+            border-radius: 50%;
+            border: 2px solid #ccc;
+            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* ========================================
+           🔘 BOTÕES ADESIVO
+           ======================================== */
+        .btn-sticker {
+            border: var(--border-width) solid var(--ink-black);
+            border-radius: var(--radius-md);
+            font-family: 'Patrick Hand', cursive;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: var(--shadow-sticker);
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-xs);
+        }
+        
+        .btn-sticker:hover { 
+            transform: translate(-2px, -2px) scale(1.05);
+            box-shadow: 8px 8px 0px var(--ink-black);
+        }
+        
+        .btn-sticker:active { 
+            transform: translate(3px, 3px) scale(0.95);
+            box-shadow: 2px 2px 0px var(--ink-black);
+        }
+        
+        .btn-pink { background-color: var(--pastel-pink); color: var(--ink-black); }
+        .btn-green { background-color: var(--pastel-green); color: var(--ink-black); }
+        .btn-blue { background-color: var(--pastel-blue); color: var(--ink-black); }
+
+        /* ========================================
+           📸 POLAROID E SLIDER MELHORADO
+           ======================================== */
+        .polaroid-wrapper {
+            background: white;
+            padding: 15px 15px 60px 15px;
+            box-shadow: var(--shadow-lg);
+            transform: rotate(2deg);
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            max-width: 400px;
+            width: 100%;
+            min-width: 300px;
+            margin: 0 auto;
+            border: 1px solid #ddd;
+            z-index: 20;
+        }
+        
+        .polaroid-wrapper:hover {
+            transform: rotate(-1deg) scale(1.03) translateY(-10px);
+            z-index: 30;
+            box-shadow: 20px 25px 40px rgba(0,0,0,0.2);
+        }
+
+        .washi-tape {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%) rotate(-3deg);
+            width: 130px;
+            height: 35px;
+            background-color: rgba(255, 182, 193, 0.85);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 40;
+            backdrop-filter: blur(2px);
+            mask-image: radial-gradient(circle at 2px 50%, transparent 2px, black 2.5px);
+            -webkit-mask-image: radial-gradient(circle at 2px 50%, transparent 2px, black 2.5px);
+            mask-size: 10px 100%;
+            -webkit-mask-size: 10px 100%;
+            mask-position: -5px;
+            -webkit-mask-position: -5px;
+        }
+
+        /* Slider Comparativo Melhorado */
+        .img-comp-container { 
+            position: relative;
+            height: 400px;
+            width: 100%;
+            min-width: 300px;
+            max-width: 100%;
+            overflow: hidden;
+            background: #f8f8f8;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"><g fill="%23d4eac8" fill-opacity="0.4"><path d="M0 0h20v20H0zM20 20h20v20H20z"/></g></svg>');
+            user-select: none;
+            -webkit-user-select: none;
+            min-height: 400px;
+            display: block;
+            visibility: visible;
+            box-sizing: border-box;
+        }
+        
+        .img-comp-container::before {
+            content: "Carregando preview...";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #999;
+            font-family: 'Patrick Hand', cursive;
+            font-size: 1.2rem;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+        
+        .img-comp-container[data-slider-ready="true"]::before {
+            display: none;
+        }
+        
+        /* Garantir que as imagens sejam visíveis */
+        .img-comp-container .img-comp-img {
+            opacity: 1 !important;
+        }
+        
+        .img-comp-container .img-comp-img img {
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+        
+        .img-comp-img { 
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        
+        .img-comp-overlay {
+            z-index: 2;
+            overflow: hidden;
+            position: absolute;
+        }
+        
+        .img-comp-img img { 
+            display: block;
+            height: 100%;
+            width: 100%;
+            object-fit: cover;
+            max-width: none;
+            transition: filter 0.3s ease;
+            pointer-events: none;
+            opacity: 1;
+        }
+        
+        .img-comp-img img[src=""],
+        .img-comp-img img:not([src]) {
+            display: none;
+        }
+        
+        .img-comp-slider {
+            position: absolute;
+            z-index: 10;
+            cursor: ew-resize;
+            cursor: grab;
+            width: 50px;
+            height: 50px;
+            background-color: white;
+            border: var(--border-width) solid var(--ink-black);
+            border-radius: 50%;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+            transition: transform 0.2s, box-shadow 0.2s;
+            pointer-events: auto;
+        }
+        
+        .img-comp-slider:active {
+            cursor: grabbing;
+        }
+        
+        .img-comp-slider:hover {
+            transform: translateY(-50%) scale(1.15);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        .img-comp-slider.dragging { 
+            transform: translateY(-50%) scale(1.2);
+        }
+        
+        /* Linha divisória */
+        .img-comp-divider {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--ink-black);
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .polaroid-caption {
+            position: absolute;
+            bottom: 15px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-family: 'Patrick Hand', cursive;
+            font-size: 1.6rem;
+            color: #555;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* ========================================
+           🎴 CARDS E COMPONENTES
+           ======================================== */
+        .pricing-card {
+            background-color: #fff;
+            border: var(--border-width) solid var(--ink-black);
+            border-radius: var(--radius-lg);
+            padding: var(--space-xl);
+            position: relative;
+            box-shadow: var(--shadow-md);
+            background-image: radial-gradient(var(--pastel-yellow) 20%, transparent 20%);
+            background-size: 20px 20px;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        .pricing-card:hover { 
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+        }
+
+        .pricing-header {
+            background: var(--ink-black);
+            color: white;
+            padding: 8px 20px;
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%) rotate(-2deg);
+            font-family: 'Patrick Hand', cursive;
+            font-size: 1.2rem;
+            border-radius: var(--radius-sm);
+            box-shadow: 3px 3px 0px rgba(0,0,0,0.2);
+        }
+
+        .step-card {
+            background: white;
+            border: var(--border-width) solid var(--ink-black);
+            border-radius: var(--radius-md);
+            padding: var(--space-lg);
+            text-align: center;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s;
+            position: relative;
+        }
+        
+        .step-card:hover { 
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+        
+        .step-icon { 
+            font-size: 3rem;
+            margin-bottom: var(--space-sm);
+            display: block;
+            animation: floatY 3s ease-in-out infinite;
+        }
+
+        /* Cards do Mural com Hover Melhorado */
+        .mural-card {
+            background: white;
+            padding: 12px 12px 50px 12px;
+            box-shadow: var(--shadow-md);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .mural-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.5s;
+        }
+        
+        .mural-card:hover::before {
+            left: 100%;
+        }
+        
+        .mural-card:hover {
+            transform: scale(1.05) translateY(-5px);
+            z-index: 30;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+        }
+        
+        .mural-card img {
+            transition: filter 0.3s ease;
+        }
+        
+        .mural-card:hover img {
+            filter: grayscale(0) contrast(1.1) brightness(1.05);
+        }
+
+        /* ========================================
+           🎨 DOODLES E ELEMENTOS DECORATIVOS
+           ======================================== */
+        .doodle { 
+            position: absolute;
+            font-size: 28px;
+            opacity: 0.9;
+            z-index: 5;
+            pointer-events: none;
+            transition: transform 0.1s ease-out;
+        }
+
+        /* ========================================
+           📋 ANTES E DEPOIS EXPANDIDO
+           ======================================== */
+        .before-after-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--space-lg);
+            margin-top: var(--space-xl);
+        }
+        
+        .before-after-item {
+            background: white;
+            border: var(--border-width) solid var(--ink-black);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            transition: transform 0.3s ease;
+        }
+        
+        .before-after-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+        }
+        
+        .before-after-label {
+            padding: var(--space-sm);
+            text-align: center;
+            font-family: 'Patrick Hand', cursive;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .before-after-label.antes {
+            background: var(--pastel-blue);
+        }
+        
+        .before-after-label.depois {
+            background: var(--pastel-green);
+        }
+
+        /* ========================================
+           💬 DEPOIMENTOS
+           ======================================== */
+        .testimonial-card {
+            background: white;
+            border: var(--border-width) solid var(--ink-black);
+            border-radius: var(--radius-md);
+            padding: var(--space-lg);
+            position: relative;
+            box-shadow: var(--shadow-md);
+            transition: transform 0.3s ease;
+        }
+        
+        .testimonial-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+        }
+        
+        .testimonial-stars {
+            color: #fbbf24;
+            font-size: 1.2rem;
+            margin-bottom: var(--space-sm);
+        }
+        
+        .testimonial-author {
+            margin-top: var(--space-sm);
+            font-family: 'Patrick Hand', cursive;
+            font-weight: bold;
+            color: var(--ink-black);
+        }
+
+        /* ========================================
+           📱 CTA STICKY MOBILE MELHORADO
+           ======================================== */
+        .cta-sticky {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: white;
+            backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.98);
+            border-top: var(--border-width) solid var(--ink-black);
+            padding: var(--space-sm);
+            z-index: 999;
+            box-shadow: 0 -5px 25px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-sm);
+        }
+        
+        @media (min-width: 768px) {
+            .cta-sticky {
+                display: none;
+            }
+        }
+
+        /* ========================================
+           📐 ESPAÇAMENTOS PADRONIZADOS
+           ======================================== */
+        .section-spacing {
+            margin-bottom: var(--space-3xl);
+        }
+        
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: var(--space-xl);
+            text-align: center;
+        }
+        
+        @media (max-width: 640px) {
+            .section-title {
+                font-size: 2rem;
+            }
+        }
+
+        /* FAQ Acordeão */
+        details[open] summary ~ * { 
+            animation: sweep 0.3s ease-in-out;
+        }
+        
+        @keyframes sweep { 
+            from { 
+                opacity: 0;
+                margin-top: -10px;
+            }
+            to { 
+                opacity: 1;
+                margin-top: 0;
+            }
+        }
+        
+        details > summary { 
+            list-style: none;
+            cursor: pointer;
+        }
+        
+        details > summary::-webkit-details-marker { 
+            display: none;
+        }
