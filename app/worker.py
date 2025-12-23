@@ -12,7 +12,6 @@ from app.services.email_service import EmailService
 from app.services.gemini_service import GeminiGenerator
 from app.services.pdf_service import PDFService
 from app.services.web_generator import WebGenerator
-from app.utils.slug import get_user_backup_dir
 
 logger = logging.getLogger(__name__)
 
@@ -114,6 +113,7 @@ def process_pet_story(
         
         # Step 4: Send email with PDF and HTML
         print(f"📧 Passo 4/4: Enviando e-mail para {email}...")
+        email_sent = False
         try:
             # Read PDF bytes
             with open(pdf_path, "rb") as f:
@@ -133,11 +133,15 @@ def process_pet_story(
             
             if email_sent:
                 print(f"✅ E-mail enviado com sucesso!")
+                logger.info(f"Email sent successfully to {email} for {nome_pet}")
             else:
-                print(f"⚠️ Falha ao enviar e-mail")
+                print(f"⚠️ Falha ao enviar e-mail - verifique logs/email.log para detalhes")
+                logger.warning(f"Failed to send email to {email} for {nome_pet} - check logs/email.log")
         except Exception as e:
-            print(f"❌ Erro ao enviar e-mail: {str(e)}")
-            raise
+            error_msg = f"Erro ao enviar e-mail: {str(e)}"
+            print(f"❌ {error_msg}")
+            logger.error(error_msg, exc_info=True)
+            # Não levanta exceção - continua e retorna resultado indicando falha no email
         
         print(f"🎉 Processamento completo para {nome_pet}!")
         return {

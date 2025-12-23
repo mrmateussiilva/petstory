@@ -1,14 +1,42 @@
 """Email service for sending PDFs via SMTP (native Python)."""
 
 import logging
+import os
 import smtplib
+from datetime import datetime
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from pathlib import Path
 from typing import Optional
 
 from app.core.config import settings
 
+# Configure email-specific logger that writes to email.log
+email_logger = logging.getLogger("email_service")
+email_logger.setLevel(logging.DEBUG)
+
+# Create logs directory if it doesn't exist
+logs_dir = Path("logs")
+logs_dir.mkdir(exist_ok=True)
+
+# File handler for email.log
+email_log_file = logs_dir / "email.log"
+file_handler = logging.FileHandler(email_log_file, encoding="utf-8")
+file_handler.setLevel(logging.DEBUG)
+
+# Format for file logging
+file_formatter = logging.Formatter(
+    "%(asctime)s - %(levelname)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S"
+)
+file_handler.setFormatter(file_formatter)
+
+# Add handler to logger (avoid duplicates)
+if not email_logger.handlers:
+    email_logger.addHandler(file_handler)
+
+# Also use standard logger for console output
 logger = logging.getLogger(__name__)
 
 
@@ -40,10 +68,21 @@ class EmailService:
         # Check if SMTP is configured
         if self.smtp_user and self.smtp_password:
             self.enabled = True
-            logger.info(f"Email service initialized with SMTP server: {self.smtp_server}:{self.smtp_port}")
+            msg = (
+                f"Email service initialized with SMTP server: {self.smtp_server}:{self.smtp_port} | "
+                f"From: {self.from_email} | User: {self.smtp_user}"
+            )
+            logger.info(msg)
+            email_logger.info(msg)
         else:
             self.enabled = False
-            logger.info("SMTP credentials not provided, email service will log only")
+            msg = (
+                "SMTP credentials not provided, email service will log only. "
+                f"SMTP_USER: {'Set' if self.smtp_user else 'Not set'}, "
+                f"SMTP_PASSWORD: {'Set' if self.smtp_password else 'Not set'}"
+            )
+            logger.warning(msg)
+            email_logger.warning(msg)
 
     async def send_pdf(
         self, to_email: str, subject: str, pdf_bytes: bytes, pdf_filename: str = "livro_pet.pdf"
@@ -157,20 +196,43 @@ class EmailService:
         Returns:
             True if sent successfully, False otherwise
         """
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        email_logger.info("=" * 80)
+        email_logger.info(f"Attempting to send email to {to_email} for pet {pet_name}")
+        email_logger.info(f"Timestamp: {timestamp}")
+        
         try:
             if not self.enabled:
                 # Simulate sending (log only)
-                logger.info(
+                msg = (
                     f"[SIMULATED] Would send pet story email to {to_email} "
                     f"for {pet_name} with PDF ({len(pdf_bytes)} bytes) and HTML"
                 )
-                return True
+                logger.warning(msg)
+                email_logger.warning(msg)
+                email_logger.warning("Email service is NOT enabled - check SMTP credentials in .env")
+                return False  # Return False instead of True to indicate failure
+            
+            # Validate email address
+            if not to_email or "@" not in to_email:
+                error_msg = f"Invalid email address: {to_email}"
+                logger.error(error_msg)
+                email_logger.error(error_msg)
+                return False
+            
+            email_logger.info(f"SMTP Configuration: Server={self.smtp_server}, Port={self.smtp_port}")
+            email_logger.info(f"From: {self.from_name} <{self.from_email}>")
+            email_logger.info(f"To: {to_email}")
+            email_logger.info(f"PDF size: {len(pdf_bytes)} bytes")
+            email_logger.info(f"HTML content size: {len(html_content)} bytes")
             
             # Create multipart message
             msg = MIMEMultipart("mixed")
             msg["From"] = f"{self.from_name} <{self.from_email}>"
             msg["To"] = to_email
             msg["Subject"] = f"O Kit Digital de {pet_name} está pronto! 🎨🐾"
+            
+            email_logger.debug(f"Email subject: {msg['Subject']}")
             
             # Create HTML body
             body_html = f"""
@@ -198,6 +260,7 @@ class EmailService:
             
             # Attach HTML body
             msg.attach(MIMEText(body_html, "html", "utf-8"))
+            email_logger.debug("HTML body attached")
             
             # Attach PDF
             pdf_attachment = MIMEApplication(pdf_bytes, _subtype="pdf")
@@ -207,6 +270,7 @@ class EmailService:
                 filename=pdf_filename,
             )
             msg.attach(pdf_attachment)
+            email_logger.debug(f"PDF attachment added: {pdf_filename}")
             
             # Attach HTML file
             html_attachment = MIMEText(html_content, "html", "utf-8")
@@ -216,37 +280,100 @@ class EmailService:
                 filename=f"homenagem_{pet_name.replace(' ', '_')}.html",
             )
             msg.attach(html_attachment)
+            email_logger.debug("HTML file attachment added")
             
             # Connect to SMTP server and send
             try:
+                email_logger.info(f"Connecting to SMTP server {self.smtp_server}:{self.smtp_port}...")
                 with smtplib.SMTP(self.smtp_server, self.smtp_port, timeout=30) as server:
                     # Enable debug (optional, can be removed in production)
                     if settings.DEBUG:
                         server.set_debuglevel(1)
                     
                     # Start TLS encryption
+                    email_logger.debug("Starting TLS encryption...")
                     server.starttls()
+                    email_logger.debug("TLS encryption started")
                     
                     # Login
+                    email_logger.debug(f"Attempting to login with user: {self.smtp_user}")
                     server.login(self.smtp_user, self.smtp_password)
+                    email_logger.debug("Login successful")
                     
                     # Send email
-                    server.send_message(msg)
-                
-                logger.info(f"Pet story email sent successfully to {to_email}")
-                return True
+                    email_logger.info(f"Sending email message to {to_email}...")
+                    send_result = server.send_message(msg)
+                    email_logger.debug(f"SMTP send_message result: {send_result}")
+                    
+                    # Check if there were any rejected recipients
+                    if send_result:
+                        rejected = send_result.get(to_email, [])
+                        if rejected:
+                            error_msg = f"Email rejected by server. Recipients: {rejected}"
+                            email_logger.error(error_msg)
+                            logger.error(error_msg)
+                            return False
+                    
+                    email_logger.info(f"✓ Email sent successfully to {to_email}")
+                    logger.info(f"Pet story email sent successfully to {to_email}")
+                    email_logger.info("=" * 80)
+                    return True
                 
             except smtplib.SMTPAuthenticationError as e:
-                logger.error(f"SMTP authentication failed: {str(e)}")
+                error_msg = f"SMTP authentication failed: {str(e)}"
+                email_logger.error(error_msg)
+                email_logger.error(f"Check your SMTP_USER and SMTP_PASSWORD in .env file")
+                email_logger.error(f"For Gmail, you need to use an App Password, not your regular password")
+                logger.error(error_msg)
+                email_logger.info("=" * 80)
+                return False
+            except smtplib.SMTPServerDisconnected as e:
+                error_msg = f"SMTP server disconnected: {str(e)}"
+                email_logger.error(error_msg)
+                email_logger.error(f"Server: {self.smtp_server}:{self.smtp_port}")
+                logger.error(error_msg)
+                email_logger.info("=" * 80)
+                return False
+            except smtplib.SMTPRecipientsRefused as e:
+                error_msg = f"SMTP recipients refused: {str(e)}"
+                email_logger.error(error_msg)
+                email_logger.error(f"Recipient {to_email} was refused by the server")
+                logger.error(error_msg)
+                email_logger.info("=" * 80)
+                return False
+            except smtplib.SMTPDataError as e:
+                error_msg = f"SMTP data error: {str(e)}"
+                email_logger.error(error_msg)
+                email_logger.error("The server refused the message data")
+                logger.error(error_msg)
+                email_logger.info("=" * 80)
                 return False
             except smtplib.SMTPException as e:
-                logger.error(f"SMTP error occurred: {str(e)}")
+                error_msg = f"SMTP error occurred: {str(e)}"
+                email_logger.error(error_msg)
+                email_logger.error(f"SMTP Error Code: {e.smtp_code if hasattr(e, 'smtp_code') else 'N/A'}")
+                email_logger.error(f"SMTP Error Message: {e.smtp_error if hasattr(e, 'smtp_error') else 'N/A'}")
+                logger.error(error_msg)
+                email_logger.info("=" * 80)
+                return False
+            except TimeoutError as e:
+                error_msg = f"Timeout connecting to SMTP server: {str(e)}"
+                email_logger.error(error_msg)
+                email_logger.error(f"Server: {self.smtp_server}:{self.smtp_port}")
+                logger.error(error_msg)
+                email_logger.info("=" * 80)
                 return False
             except Exception as e:
-                logger.error(f"Unexpected error sending email: {str(e)}", exc_info=True)
+                error_msg = f"Unexpected error sending email: {str(e)}"
+                email_logger.error(error_msg, exc_info=True)
+                logger.error(error_msg, exc_info=True)
+                email_logger.info("=" * 80)
                 return False
             
         except Exception as e:
-            logger.error(f"Error sending pet story email to {to_email}: {str(e)}", exc_info=True)
+            error_msg = f"Error sending pet story email to {to_email}: {str(e)}"
+            email_logger.error(error_msg, exc_info=True)
+            logger.error(error_msg, exc_info=True)
+            email_logger.info("=" * 80)
             return False
 

@@ -134,14 +134,20 @@ async def upload_pet_story(
     photo_paths = []
     
     try:
-        # Create temp directory for user
-        from app.utils.slug import get_user_backup_dir
+        # Create unique temp directory for this order
+        from app.utils.slug import get_unique_order_dir
         from datetime import datetime
         
-        user_temp_dir = get_user_backup_dir(settings.TEMP_DIR, email)
-        Path(user_temp_dir).mkdir(parents=True, exist_ok=True)
-        
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        order_temp_dir = get_unique_order_dir(
+            base_dir=settings.TEMP_DIR,
+            email=email,
+            pet_name=nome_pet,
+            timestamp=timestamp
+        )
+        Path(order_temp_dir).mkdir(parents=True, exist_ok=True)
+        
+        logger.info(f"Created unique order directory: {order_temp_dir} for {nome_pet} ({email})")
         
         # Process each photo
         for idx, foto in enumerate(fotos, 1):
@@ -164,7 +170,7 @@ async def upload_pet_story(
             
             # Save photo temporarily
             photo_filename = f"foto_{idx}_{timestamp}{Path(foto.filename).suffix}"
-            photo_path = os.path.join(user_temp_dir, photo_filename)
+            photo_path = os.path.join(order_temp_dir, photo_filename)
             
             with open(photo_path, "wb") as f:
                 f.write(photo_bytes)

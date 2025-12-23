@@ -146,11 +146,11 @@ O PDF gerado contém:
 
 ### 6. Armazenamento Temporário
 
-- Arquivos organizados por usuário
-- Diretório baseado em slug do e-mail
-- Estrutura: `temp/[email-slug]/`
-- Todos os arquivos (fotos originais, artes geradas, PDF, HTML) salvos no mesmo diretório
-- Timestamps nos nomes dos arquivos para organização
+- Arquivos organizados por pedido único
+- Estrutura de diretórios: `temp/[email-slug]/[nome-pet-slug]_[timestamp]/`
+- Cada pedido tem seu próprio diretório único (mesmo e-mail pode ter múltiplos pedidos)
+- Todos os arquivos de um pedido (fotos originais, artes geradas, PDF, HTML) são salvos no mesmo diretório
+- Formato do diretório garante unicidade: email + nome do pet + timestamp (YYYYMMDD_HHMMSS)
 
 ---
 
@@ -264,11 +264,12 @@ petStoryArt/
 │   └── criar.html                # Página de criação/upload
 │
 ├── temp/                         # Arquivos temporários
-│   └── [email-slug]/             # Por usuário
-│       ├── foto_1_[timestamp].jpg
-│       ├── arte_[timestamp].png
-│       ├── kit_digital_[timestamp].pdf
-│       └── homenagem_[timestamp].html
+│   └── [email-slug]/             # Por usuário (email)
+│       └── [nome-pet]_[timestamp]/  # Por pedido único
+│           ├── foto_1_[timestamp].jpg
+│           ├── arte_[timestamp].png
+│           ├── kit_digital_[timestamp].pdf
+│           └── homenagem_[timestamp].html
 │
 ├── fonts/                        # Fontes (se necessário)
 │   └── PatrickHand-Regular.ttf
