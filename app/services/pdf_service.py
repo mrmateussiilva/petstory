@@ -297,12 +297,34 @@ class PDFService:
         # ============================================
         pdf.add_page()
         
-        # Title: "Livro de Colorir do [pet_name]"
-        self._set_font(pdf, "B", 32)
-        title_y = 60
+        # Decorative border/moldure around the page
+        border_margin = 10
+        pdf.set_line_width(3)
+        pdf.set_draw_color(100, 150, 200)  # Light blue decorative border
+        pdf.rect(
+            border_margin, 
+            border_margin, 
+            self.A4_WIDTH_MM - (2 * border_margin), 
+            self.A4_HEIGHT_MM - (2 * border_margin)
+        )
+        
+        # Inner decorative border
+        inner_margin = 15
+        pdf.set_line_width(1)
+        pdf.set_draw_color(200, 200, 200)  # Light gray inner border
+        pdf.rect(
+            inner_margin, 
+            inner_margin, 
+            self.A4_WIDTH_MM - (2 * inner_margin), 
+            self.A4_HEIGHT_MM - (2 * inner_margin)
+        )
+        
+        # Title: "Livro de Colorir do [pet_name]" - Using Times font for title
+        pdf.set_font("Times", "B", 36)  # Different font for title
+        title_y = 50
         pdf.set_y(title_y)
         title_text = f"Livro de Colorir do {clean_pet_name}"
-        pdf.cell(0, 15, title_text, ln=1, align="C")
+        pdf.cell(0, 18, title_text, ln=1, align="C")
         
         # Image centered below title - USE FIRST ART IMAGE
         try:
@@ -337,7 +359,7 @@ class PDFService:
             logger.warning(f"Could not add art image to cover: {e}")
         
         # ============================================
-        # PAGE 2: THE STORY (A História)
+        # PAGE 2: THE STORY (A História) - Show ALL original photos
         # ============================================
         pdf.add_page()
         
@@ -353,7 +375,7 @@ class PDFService:
         
         # Title: "Quem é [pet_name]?"
         self._set_font(pdf, "B", 24)
-        title_y = border_margin + 20
+        title_y = border_margin + 15
         pdf.set_y(title_y)
         title_text = f"Quem é {clean_pet_name}?"
         pdf.cell(0, 12, title_text, ln=1, align="C")
@@ -366,65 +388,122 @@ class PDFService:
             pdf.cell(0, 8, clean_pet_date, ln=1, align="C")
             pdf.set_text_color(0, 0, 0)  # Reset to black
         
-        # Polaroid-style photo frame with ORIGINAL IMAGE (Foto Real)
-        polaroid_width = 80
-        polaroid_height = 100
-        polaroid_x = (self.A4_WIDTH_MM - polaroid_width) / 2
-        polaroid_y = pdf.get_y() + 10
+        # Show ALL original photos in a grid layout
+        photos_start_y = pdf.get_y() + 10
         
-        try:
-            img = Image.open(biography_image_path)
-            if img.mode != "RGB":
-                img = img.convert("RGB")
-            
-            img_width, img_height = img.size
-            aspect_ratio = img_width / img_height
-            
-            # Calculate image size within Polaroid frame (leave space for bottom margin)
-            frame_bottom_margin = 15
-            image_area_height = polaroid_height - frame_bottom_margin
-            image_area_width = polaroid_width - 6  # 3mm margin on each side
-            
-            if aspect_ratio > (image_area_width / image_area_height):
-                photo_width = image_area_width
-                photo_height = image_area_width / aspect_ratio
+        # Get all original photos
+        all_original_photos = []
+        if original_image_paths and len(original_image_paths) > 0:
+            for photo_path in original_image_paths:
+                if os.path.exists(photo_path):
+                    all_original_photos.append(photo_path)
+        
+        # If no original photos, use first art as fallback
+        if not all_original_photos:
+            if os.path.exists(biography_image_path):
+                all_original_photos = [biography_image_path]
+        
+        # Calculate grid layout based on number of photos
+        num_photos = len(all_original_photos)
+        if num_photos > 0:
+            # Determine grid: 1 photo = 1 column, 2-4 photos = 2 columns, 5+ = 3 columns
+            if num_photos == 1:
+                cols = 1
+            elif num_photos <= 4:
+                cols = 2
             else:
-                photo_height = image_area_height
-                photo_width = image_area_height * aspect_ratio
+                cols = 3
             
-            # Center image within frame
-            photo_x = polaroid_x + (polaroid_width - photo_width) / 2
-            photo_y = polaroid_y + 3  # Small top margin
+            rows = (num_photos + cols - 1) // cols  # Ceiling division
             
-            # Draw Polaroid frame
-            self._add_polaroid_frame(pdf, polaroid_x, polaroid_y, polaroid_width, polaroid_height)
+            # Calculate photo size based on grid
+            photo_spacing = 8
+            available_width = self.A4_WIDTH_MM - (2 * border_margin) - (cols - 1) * photo_spacing
+            available_height = 120  # Reserve space for text below
             
-            # Add photo inside frame
-            temp_buffer = io.BytesIO()
-            img.save(temp_buffer, format="PNG")
-            temp_buffer.seek(0)
+            photo_width = available_width / cols
+            photo_height = min(available_height / rows, photo_width * 0.75)  # Keep reasonable aspect
             
-            pdf.image(temp_buffer, x=photo_x, y=photo_y, w=photo_width, h=photo_height)
+            # Draw photos in grid
+            current_y = photos_start_y
+            photo_idx = 0
             
-            # Update Y position for text below Polaroid
-            text_start_y = polaroid_y + polaroid_height + 15
-        except Exception as e:
-            logger.warning(f"Could not add original photo to biography page: {e}")
-            text_start_y = pdf.get_y() + 15
+            for row in range(rows):
+                if photo_idx >= num_photos:
+                    break
+                    
+                current_x = border_margin
+                
+                for col in range(cols):
+                    if photo_idx >= num_photos:
+                        break
+                    
+                    photo_path = all_original_photos[photo_idx]
+                    
+                    try:
+                        img = Image.open(photo_path)
+                        if img.mode != "RGB":
+                            img = img.convert("RGB")
+                        
+                        img_width, img_height = img.size
+                        aspect_ratio = img_width / img_height
+                        
+                        # Calculate dimensions maintaining aspect ratio
+                        if aspect_ratio > (photo_width / photo_height):
+                            width = photo_width
+                            height = photo_width / aspect_ratio
+                        else:
+                            height = photo_height
+                            width = photo_height * aspect_ratio
+                        
+                        # Center within cell
+                        cell_x = current_x + (photo_width - width) / 2
+                        cell_y = current_y + (photo_height - height) / 2
+                        
+                        # Draw Polaroid-style frame
+                        frame_margin = 2
+                        self._add_polaroid_frame(
+                            pdf, 
+                            current_x - frame_margin, 
+                            current_y - frame_margin, 
+                            photo_width + (2 * frame_margin), 
+                            photo_height + (2 * frame_margin) + 10
+                        )
+                        
+                        # Add photo
+                        temp_buffer = io.BytesIO()
+                        img.save(temp_buffer, format="PNG")
+                        temp_buffer.seek(0)
+                        
+                        pdf.image(temp_buffer, x=cell_x, y=cell_y, w=width, h=height)
+                        
+                        photo_idx += 1
+                        current_x += photo_width + photo_spacing
+                        
+                    except Exception as e:
+                        logger.warning(f"Could not add photo {photo_idx + 1} to biography page: {e}")
+                        photo_idx += 1
+                        current_x += photo_width + photo_spacing
+                
+                current_y += photo_height + photo_spacing
+            
+            # Update Y position for text below photos
+            text_start_y = current_y + 10
+        else:
+            text_start_y = photos_start_y + 20
         
-        # Body text: Story with generous margins (book-like layout)
+        # Body text: Story with generous margins (book-like layout) - 16pt font
         text_margin = 25
-        self._set_font(pdf, "", 12)
+        self._set_font(pdf, "", 16)  # Changed to 16pt as requested
         pdf.set_xy(text_margin, text_start_y)
         
         # Calculate available width for text
         text_width = self.A4_WIDTH_MM - (2 * text_margin)
         
         # Multi-cell with justified text for book-like appearance
-        self._set_font(pdf, "", 11)
         pdf.multi_cell(
             text_width, 
-            7, 
+            9,  # Increased line height for 16pt font
             clean_pet_story, 
             align="J"  # Justified text
         )
@@ -440,14 +519,17 @@ class PDFService:
             if story_parts and idx - 1 < len(story_parts):
                 story_part = story_parts[idx - 1]
             
-            # Title for this coloring page
+            # Title for this coloring page - Changed to more cute name
             self._set_font(pdf, "B", 18)
             pdf.set_y(15)
-            pdf.cell(0, 12, f"Desenho #{idx}", ln=1, align="C")
+            # Use cute names instead of "Desenho #x"
+            cute_names = ["Momentos Especiais", "Aventura", "Recordação", "Diversão", "Carinho", "Amizade", "Brincadeira", "Felicidade"]
+            cute_name = cute_names[(idx - 1) % len(cute_names)]
+            pdf.cell(0, 12, f"{cute_name} #{idx}", ln=1, align="C")
             
-            # Add story text at the top if available
+            # Add story text at the top if available - 16pt font
             if story_part:
-                self._set_font(pdf, "", 11)
+                self._set_font(pdf, "", 16)  # Changed to 16pt
                 pdf.set_y(pdf.get_y() + 5)
                 # Calculate available width for text
                 text_margin = 20
@@ -456,7 +538,7 @@ class PDFService:
                 pdf.set_x(text_margin)
                 pdf.multi_cell(
                     text_width,
-                    6,
+                    9,  # Increased line height for 16pt font
                     story_part,
                     align="J"  # Justified text
                 )
@@ -517,6 +599,18 @@ class PDFService:
         # Use sticker_paths if provided, otherwise fallback to generated_art_paths
         sticker_images = sticker_paths if sticker_paths and len(sticker_paths) > 0 else generated_art_paths
         
+        # If we have original images, also include them in stickers to have more variety
+        all_sticker_images = list(sticker_images)
+        if original_image_paths and len(original_image_paths) > 0:
+            # Add original images as additional sticker options
+            for orig_path in original_image_paths:
+                if os.path.exists(orig_path) and orig_path not in all_sticker_images:
+                    all_sticker_images.append(orig_path)
+        
+        # Use all available images for stickers
+        if len(all_sticker_images) > 0:
+            sticker_images = all_sticker_images
+        
         # Grid 3x3 configuration (9 stickers total)
         sticker_size = 50
         spacing = 10
@@ -524,13 +618,17 @@ class PDFService:
         start_x = (self.A4_WIDTH_MM - grid_width) / 2
         start_y = 40
         
-        # Fill grid with stickers (repeat if necessary to fill 9 slots)
+        # Fill grid with stickers (use all available, repeat only if needed)
         sticker_index = 0
         for row in range(3):
             for col in range(3):
-                # Cycle through available stickers
-                sticker_path = sticker_images[sticker_index % len(sticker_images)]
-                sticker_index += 1
+                # Use all available stickers, cycle only if we have less than 9
+                if len(sticker_images) > 0:
+                    sticker_path = sticker_images[sticker_index % len(sticker_images)]
+                    sticker_index += 1
+                else:
+                    # Fallback: skip this cell if no stickers available
+                    continue
                 
                 try:
                     img = Image.open(sticker_path)
